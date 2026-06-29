@@ -9,10 +9,15 @@ using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class TestGraphView : GraphView
 {
-    public TestGraphView()
+    FSMGraphSo graph;
+
+    public TestGraphView(FSMGraphSo graph)
     {
+        this.graph = graph;
         this.StretchToParentSize();
-        SetupZoom(0.25f, 2f);
+        //ContentZoomer.DefaultMinScale => 0.25f
+        //Max는 1f
+        SetupZoom(ContentZoomer.DefaultMinScale, 2f);
 
         this.AddManipulator(new ContentDragger());
         this.AddManipulator(new SelectionDragger());
@@ -66,84 +71,47 @@ public class TestGraphView : GraphView
         AddElement(view);
         //entryNodeId = entry.id;
     }
-}
 
-public class NodeData
-{
-    public string title = "State";
-    public Vector2 position;
-}
-
-public class NodeView : Node
-{
-    NodeData data;
-    public NodeView(NodeData data)
+    public void CreateNode(Vector2 pos)
     {
-        this.data = data;
-        SetPosition(new Rect(
-        data.position,
-        new Vector2(150, 80)
-    ));
-
-        ApplyStyle();
-        CreatePorts();
-        //RefreshCapsule();
-        //RegisterHover();
+        var entry = new NodeData
+        {
+            title = "New_Node",
+            position = pos
+        };
+        GraphElement node = new NodeView(entry);
+        AddElement(node);
     }
 
-
-    void ApplyStyle()
+    public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
     {
+        base.BuildContextualMenu(evt);
 
-        var color = new Color(0.4f, 0.4f, 0.4f);
-
-        titleContainer.style.backgroundColor = color;
-        mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f);
+        evt.menu.AppendAction("Add Node", action =>
+        {
+            var pos = contentViewContainer.WorldToLocal(action.eventInfo.localMousePosition);
+            CreateNode(pos);
+        });
     }
 
-    void CreatePorts()
+    //부모 메서드 오버라이드 (포트 연결 관련)
+    public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
     {
-        Port input = InstantiatePort(
-            Orientation.Vertical,
-            Direction.Input,
-            Port.Capacity.Single,
-            typeof(float)
-        );
+        var compatiblePorts = new List<Port>();
+        ports.ForEach(port =>
+        {
+            // 같은 포트 제외
+            if (startPort == port) return;
+            // 같은 노드끼리 연결 불가
+            if (startPort.node == port.node) return;
+            // Input ↔ Output만 연결 (같은 방향끼리는 불가)
+            if (startPort.direction == port.direction) return;
+            // 타입 같을 때만 (둘 다 typeof(float)면 OK)
+            //if (startPort.portType != port.portType) return;
+            //어차피 엣지는 흐름용으로만 쓸거임
 
-        input.portName = "Input";
-
-
-        Port output = InstantiatePort(
-            Orientation.Vertical,
-            Direction.Output,
-            Port.Capacity.Multi,
-            typeof(float)
-        );
-
-        output.portName = "Output";
-
-
-        // 위 포트 영역
-        VisualElement topPort = new VisualElement();
-        topPort.style.flexDirection = FlexDirection.Column;
-        topPort.style.alignItems = Align.Center;
-
-        topPort.Add(input);
-
-
-        // 아래 포트 영역
-        VisualElement bottomPort = new VisualElement();
-        bottomPort.style.flexDirection = FlexDirection.Column;
-        bottomPort.style.alignItems = Align.Center;
-
-        bottomPort.Add(output);
-
-
-        extensionContainer.Insert(0, topPort);
-        extensionContainer.Add(bottomPort);
-
-
-        RefreshPorts();
-        RefreshExpandedState();
+            compatiblePorts.Add(port);
+        });
+        return compatiblePorts;
     }
 }
