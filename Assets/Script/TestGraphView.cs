@@ -1,19 +1,22 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class TestGraphView : GraphView
 {
-    FSMGraphSo graph;
+    FSMGraphSo graphSo;
+    public Action OnGraphChanged;
 
-    public TestGraphView(FSMGraphSo graph)
+    public TestGraphView(FSMGraphSo graphSo)
     {
-        this.graph = graph;
+        this.graphSo = graphSo;
         this.StretchToParentSize();
         //ContentZoomer.DefaultMinScale => 0.25f
         //Max는 1f
@@ -24,6 +27,7 @@ public class TestGraphView : GraphView
         this.AddManipulator(new RectangleSelector());
         this.AddManipulator(new ClickSelector());
 
+        graphViewChanged = OnGraphViewChange;
 
         LoadGraph();
     }
@@ -31,46 +35,117 @@ public class TestGraphView : GraphView
 
     public void LoadGraph()
     {
+        graphViewChanged -= OnGraphViewChange;
+
         DeleteElements(graphElements.ToList());
 
-        EnsureEntryNode();
+        graphSo.EnsureEntryNode();
 
-        //var nodeViews = new Dictionary<string, FsmNodeView>();
-        //foreach (var node in asset.nodes)
-        //{
-        //    var view = new FsmNodeView(node, asset);
-        //    BindNodeHover(view);
-        //    AddElement(view);
-        //    nodeViews[node.id] = view;
-        //}
+        LoadData(graphSo);
 
-        //foreach (var edgeData in asset.edges)
-        //{
-        //    if (!nodeViews.TryGetValue(edgeData.outputNodeId, out var outputNode)) continue;
-        //    if (!nodeViews.TryGetValue(edgeData.inputNodeId, out var inputNode)) continue;
-
-        //    var outPort = outputNode.GetPortForEdge(edgeData.port);
-        //    if (outPort == null || inputNode.InputPort == null) continue;
-
-        //    var edge = outPort.ConnectTo(inputNode.InputPort);
-        //    edge.userData = edgeData;
-        //    AddElement(edge);
-        //}
+        graphViewChanged = OnGraphViewChange;
 
     }
 
-    public void EnsureEntryNode()
+    public void LoadData(FSMGraphSo graphSo)
     {
-        var entry = new NodeData
+        //임시 딕셔너리 필요가있나? 흠..
+        Dictionary<string, NodeView> nodeViews = new Dictionary<string, NodeView>();
+
+
+        foreach (NodeData node in graphSo.nodes)
         {
-            title = "Entry",
-            position = new Vector2(80, 200)
-        };
-        //nodes.Add(entry);
-        GraphElement view = new NodeView(entry);
-        AddElement(view);
-        //entryNodeId = entry.id;
+            NodeView view = new NodeView(node, graphSo);
+            nodeViews[node.id] = view;
+
+            AddElement(view);
+        }
+
+        foreach (EdgeData edgeData in graphSo.edges)
+        {
+            if (!nodeViews.TryGetValue(edgeData.outputNodeId, out NodeView outputNode)) continue;
+            if (!nodeViews.TryGetValue(edgeData.inputNodeId, out NodeView inputNode)) continue;
+
+            //true false 받아오던데 필요한가?
+            //var outPort = outputNode.GetPortForEdge();
+
+            //하씨 이거좀 잘따져야겠다
+            Port outPort = outputNode.OutputPort;
+            //if (outPort == null || inputNode.InputPort == null) continue;
+
+            Edge edge = outPort.ConnectTo(inputNode.InputPort);
+            edge.userData = edgeData;
+            AddElement(edge);
+        }
+
     }
+
+    GraphViewChange OnGraphViewChange(GraphViewChange change)
+    {
+        
+        if (change.edgesToCreate != null)
+        {
+            foreach (Edge edge in change.edgesToCreate)
+            {
+                NodeView output = edge.output.node as NodeView;
+                NodeView input = edge.input.node as NodeView;
+                if (output == null || input == null) continue;
+
+                EdgeData edgeData = new EdgeData
+                {
+                    outputNodeId = output.NodeId,
+                    inputNodeId = input.NodeId,
+                };
+                graphSo.edges.Add(edgeData);
+                edge.userData = edgeData;
+            }
+        }
+
+        if (change.elementsToRemove != null)
+        {
+            foreach (GraphElement element in change.elementsToRemove)
+            {
+                if (element is Edge edge)
+                {
+                    NodeView output = edge.output.node as NodeView;
+                    NodeView input = edge.input.node as NodeView;
+                    if (output == null || input == null) continue;
+
+                    //이거 먼지 알아야함
+                    graphSo.edges.RemoveAll(e =>
+                        e.outputNodeId == output.NodeId && e.inputNodeId == input.NodeId);
+                }
+                else if (element is NodeView nodeView)
+                {
+                    //엔트리 삭제 방지 만들어야함
+
+                    graphSo.nodes.RemoveAll(n => n.id == nodeView.NodeId);
+                    graphSo.edges.RemoveAll(e =>
+                        e.outputNodeId == nodeView.NodeId || e.inputNodeId == nodeView.NodeId);
+                }
+            }
+        }
+
+        if (change.movedElements != null)
+        {
+            //언두인데 좀 나중에 하자 일단 필요없잖아
+            //Undo.RecordObject(graphSo, "Change Node");
+            foreach (GraphElement element in change.movedElements)
+            {
+                if (element is NodeView nodeView)
+                {
+                    nodeView.SyncPositionToData();
+                }
+            }
+        }
+
+        // 에디터야 저장해줘
+        EditorUtility.SetDirty(graphSo);
+        OnGraphChanged?.Invoke();
+        return change;
+    }
+
+
 
     public void CreateNode(Vector2 pos)
     {
@@ -79,7 +154,8 @@ public class TestGraphView : GraphView
             title = "New_Node",
             position = pos
         };
-        GraphElement node = new NodeView(entry);
+        GraphElement node = new NodeView(entry, graphSo);
+        graphSo.nodes.Add(entry);
         AddElement(node);
     }
 

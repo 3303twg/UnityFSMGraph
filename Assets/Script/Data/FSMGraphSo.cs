@@ -1,13 +1,36 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "FSM/Graph")]
 public class FSMGraphSo : ScriptableObject
 {
     public string entryNodeId;
+    //흠 이거 id 두개로 할 필요있나?
+    public string id;
+    [SerializeField]
     public List<NodeData> nodes = new();
+    [SerializeField]
     public List<EdgeData> edges = new();
+
+
+    //이건 좀 수정하든가 해야겠다
+    public NodeData GetNode(string id) => nodes.FirstOrDefault(n => n.id == id);
+    public NodeData EntryNode => string.IsNullOrEmpty(entryNodeId) ? null : GetNode(entryNodeId);
+
+    public void EnsureEntryNode()
+    {
+        if (EntryNode != null) return;
+        NodeData entry = new NodeData
+        {
+            id = "entryNode",
+            title = "Entry",
+            position = new Vector2(80, 200)
+        };
+        nodes.Add(entry);
+        entryNodeId = entry.id;
+    }
 }
 
 

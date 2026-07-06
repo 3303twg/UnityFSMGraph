@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: New FSM Graph So
   m_EditorClassIdentifier: 
   entryNodeId: 
-  nodes:
-  - title: 
-    position: {x: 0, y: 0}
+  id: 
+  nodes: []
   edges: []

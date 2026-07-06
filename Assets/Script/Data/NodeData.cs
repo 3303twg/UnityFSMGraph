@@ -7,6 +7,7 @@ using UnityEngine;
 [Serializable]
 public class NodeData
 {
+    public string id = Guid.NewGuid().ToString();
     public string title = "State";
     public Vector2 position;
 }
