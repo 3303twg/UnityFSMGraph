@@ -8,6 +8,7 @@ using UnityEngine;
 public class NodeData
 {
     public string id = Guid.NewGuid().ToString();
+    public NodeType nodeType;
     public string title = "State";
     public Vector2 position;
 }

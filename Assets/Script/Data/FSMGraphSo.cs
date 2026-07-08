@@ -25,6 +25,7 @@ public class FSMGraphSo : ScriptableObject
         NodeData entry = new NodeData
         {
             id = "entryNode",
+            nodeType = NodeType.Entry,
             title = "Entry",
             position = new Vector2(80, 200)
         };

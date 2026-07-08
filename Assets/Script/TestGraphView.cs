@@ -12,12 +12,14 @@ using static UnityEditor.Experimental.GraphView.GraphView;
 public class TestGraphView : GraphView
 {
     FSMGraphSo graphSo;
+    GraphWindowInspectorView inspector;
     public Action OnGraphChanged;
 
-    public TestGraphView(FSMGraphSo graphSo)
+    public TestGraphView(FSMGraphSo graphSo, GraphWindowInspectorView graphWindowInspectorView)
     {
         this.graphSo = graphSo;
-        this.StretchToParentSize();
+        inspector = graphWindowInspectorView;
+        //this.StretchToParentSize();
         //ContentZoomer.DefaultMinScale => 0.25f
         //Max는 1f
         SetupZoom(ContentZoomer.DefaultMinScale, 2f);
@@ -39,8 +41,6 @@ public class TestGraphView : GraphView
 
         DeleteElements(graphElements.ToList());
 
-        graphSo.EnsureEntryNode();
-
         LoadData(graphSo);
 
         graphViewChanged = OnGraphViewChange;
@@ -49,7 +49,8 @@ public class TestGraphView : GraphView
 
     public void LoadData(FSMGraphSo graphSo)
     {
-        //임시 딕셔너리 필요가있나? 흠..
+        this.graphSo.EnsureEntryNode();
+
         Dictionary<string, NodeView> nodeViews = new Dictionary<string, NodeView>();
 
 
@@ -145,13 +146,41 @@ public class TestGraphView : GraphView
         return change;
     }
 
+    public void BindSelection()
+    {
+        RegisterCallback<PointerUpEvent>(evt =>
+        {
+            if (evt.button == (int)UnityEngine.UIElements.MouseButton.RightMouse)
+                return;
+            RefreshInspectorSelection();
+        });
+        RegisterCallback<KeyUpEvent>(_ => RefreshInspectorSelection());
+    }
 
+    void RefreshInspectorSelection()
+    {
+        //UI ToolKit에서 사용하는 API 코루틴마냥 해당 UI에 종속되는듯?
+        schedule.Execute(() =>
+        {
+            if(selection.Count > 1 || selection.Count == 0)
+            {
+                inspector.Clear();
+            }
+            else if (selection[0] is NodeView node)
+                inspector.BindNode(node.data, graphSo);
+            else if (selection[0] is Edge edge && edge.userData is EdgeData edgeData)
+                inspector.BindEdge(edgeData, graphSo);
+            else
+                inspector.Clear();
+        }).ExecuteLater(0); //한프레임 후 실행하기
+    }
 
     public void CreateNode(Vector2 pos)
     {
         var entry = new NodeData
         {
             title = "New_Node",
+            nodeType = NodeType.Action,
             position = pos
         };
         GraphElement node = new NodeView(entry, graphSo);
@@ -173,6 +202,7 @@ public class TestGraphView : GraphView
     //부모 메서드 오버라이드 (포트 연결 관련)
     public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
     {
+      
         var compatiblePorts = new List<Port>();
         ports.ForEach(port =>
         {
@@ -189,5 +219,16 @@ public class TestGraphView : GraphView
             compatiblePorts.Add(port);
         });
         return compatiblePorts;
+    }
+
+    public void RefreshAllNodeViews()
+    {
+        foreach(var element in nodes)
+        {
+            if(element is NodeView nodeView)
+            {
+                nodeView.SyncTitle();
+            }
+        }
     }
 }

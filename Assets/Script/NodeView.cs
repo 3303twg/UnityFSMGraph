@@ -6,7 +6,7 @@ using UnityEngine;
 public class NodeView : Node
 {
     FSMGraphSo graphSo;
-    NodeData data;
+    public NodeData data;
 
 
     public string NodeId
@@ -49,23 +49,44 @@ public class NodeView : Node
     {
         //타입마다 다르게 해줘야하고
 
-        InputPort = InstantiatePort(
-            Orientation.Horizontal,
-            Direction.Input,
-            Port.Capacity.Single,
-            typeof(float)
-        );
-        InputPort.portName = "Input";
-        inputContainer.Add(InputPort);
+        if(data.nodeType == NodeType.Entry)
+        {
+            InputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, typeof(bool));
+            InputPort.portName = "Input";
+            inputContainer.Add(InputPort);
 
-        OutputPort = InstantiatePort(
-            Orientation.Horizontal,
-            Direction.Output,
-            Port.Capacity.Multi,
-            typeof(float)
-        );
-        OutputPort.portName = "Output";
-        outputContainer.Add(OutputPort);
+            OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
+            OutputPort.portName = "Out";
+            outputContainer.Add(OutputPort);
+        }
+
+        else if (data.nodeType == NodeType.Transition)
+        {
+
+        }
+
+        else if(data.nodeType == NodeType.Monitor)
+        {
+            return;
+        }
+
+        else if(data.nodeType == NodeType.Action)
+        {
+            InputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, typeof(bool));
+            InputPort.portName = "Input";
+            inputContainer.Add(InputPort);
+
+            OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
+            OutputPort.portName = "Out";
+            outputContainer.Add(OutputPort);
+        }
+
+        else if(data.nodeType == NodeType.Reference)
+        {
+            OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
+            OutputPort.portName = "Out";
+            outputContainer.Add(OutputPort);
+        }
 
         RefreshExpandedState();
         RefreshPorts();
@@ -74,5 +95,10 @@ public class NodeView : Node
     public void SyncPositionToData()
     {
         data.position = GetPosition().position;
+    }
+
+    public void SyncTitle()
+    {
+        title = data.title;
     }
 }
