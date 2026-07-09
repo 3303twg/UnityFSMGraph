@@ -11,4 +11,5 @@ public class NodeData
     public NodeType nodeType;
     public string title = "State";
     public Vector2 position;
+    public BaseStateSoAsset stateSo;
 }

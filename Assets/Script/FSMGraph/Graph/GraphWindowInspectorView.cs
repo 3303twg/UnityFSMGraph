@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Search;
+using UnityEditor.UIElements;
 using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -82,17 +82,27 @@ public class GraphWindowInspectorView : VisualElement
                 break;
 
             case NodeType.Action:
-                ObjectField objectField = new ObjectField("PatternSo")
+                ObjectField objectField = new ObjectField("StateSo")
                 {
-                    objectType = typeof(Test),
-                    value = new Test()
+                    objectType = typeof(BaseStateSoAsset),
+                    value = node.stateSo,
                 };
-                objectField.RegisterValueChangedCallback(_ =>
+                objectField.RegisterValueChangedCallback(evt =>
                 {
-                    //대충 데이터 기반으로 갱신인데 일단 뭐 나중에 ㄱㄱ
+                    node.stateSo = evt.newValue as BaseStateSoAsset;
                     MarkDirty();
+                    RebuildNodeInspector();
                 });
                 root.Add(objectField);
+
+                if(node.stateSo != null)
+                {
+
+
+                    var so = new SerializedObject(node.stateSo);
+                    var inspector = new InspectorElement(so);
+                    root.Add(MakeSection("So인스펙터", inspector));
+                }
                 break;
 
         }
@@ -118,5 +128,37 @@ public class GraphWindowInspectorView : VisualElement
         if (graphDataSo != null)
             EditorUtility.SetDirty(graphDataSo);
         OnNodeDataChanged?.Invoke();
+    }
+
+
+
+    //예쁜 박스만들기
+    VisualElement MakeSection(string title, VisualElement content)
+    {
+        var section = new VisualElement();
+        section.style.marginTop = 10;
+        section.style.paddingTop = 8;
+        section.style.paddingBottom = 8;
+        section.style.paddingLeft = 6;
+        section.style.paddingRight = 6;
+        section.style.backgroundColor = new Color(0.14f, 0.14f, 0.16f);
+        section.style.borderTopWidth = 1;
+        section.style.borderBottomWidth = 1;
+        section.style.borderLeftWidth = 1;
+        section.style.borderRightWidth = 1;
+        section.style.borderTopColor = new Color(0.08f, 0.08f, 0.08f);
+        section.style.borderBottomColor = new Color(0.08f, 0.08f, 0.08f);
+        section.style.borderLeftColor = new Color(0.08f, 0.08f, 0.08f);
+        section.style.borderRightColor = new Color(0.08f, 0.08f, 0.08f);
+        section.style.borderTopLeftRadius = 4;
+        section.style.borderTopRightRadius = 4;
+        section.style.borderBottomLeftRadius = 4;
+        section.style.borderBottomRightRadius = 4;
+
+        var header = MakeHeader(title);
+        header.style.marginBottom = 8;
+        section.Add(header);
+        section.Add(content);
+        return section;
     }
 }
