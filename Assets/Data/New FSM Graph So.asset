@@ -12,35 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d438543a04bc9684db9379c8fb8165ee, type: 3}
   m_Name: New FSM Graph So
   m_EditorClassIdentifier: 
-  entryNodeId: entryNode
+  entryNodeId: 
   id: 
-  nodes:
-  - id: 66c8a844-226b-4e2c-88bd-cead310e5c0f
-    nodeType: 0
-    title: New_Node
-    position: {x: 463, y: 341}
-  - id: entryNode
-    nodeType: 0
-    title: Entry
-    position: {x: 80, y: 200}
-  - id: 3b65a92c-e192-40f3-8323-0917afb4f254
-    nodeType: 0
-    title: New_Node
-    position: {x: 482, y: 225}
-  - id: 8c4ffa49-e0d5-48b1-a558-7d02db457f6c
-    nodeType: 0
-    title: New_Node
-    position: {x: 334, y: 148}
-  edges:
-  - id: 
-    outputNodeId: entryNode
-    inputNodeId: 4a88e5fa-6f1d-466b-bd07-5ade735e000c
-  - id: 
-    outputNodeId: entryNode
-    inputNodeId: 8c4ffa49-e0d5-48b1-a558-7d02db457f6c
-  - id: 
-    outputNodeId: 8c4ffa49-e0d5-48b1-a558-7d02db457f6c
-    inputNodeId: 3b65a92c-e192-40f3-8323-0917afb4f254
-  - id: 
-    outputNodeId: 3b65a92c-e192-40f3-8323-0917afb4f254
-    inputNodeId: 66c8a844-226b-4e2c-88bd-cead310e5c0f
+  nodes: []
+  edges: []

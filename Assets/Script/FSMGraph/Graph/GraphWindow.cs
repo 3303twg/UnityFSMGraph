@@ -38,13 +38,13 @@ public class GraphWindow : EditorWindow
         VisualElement root = new VisualElement { style = { flexGrow = 1 } };
         rootVisualElement.Add(root);
 
-        
+
 
         #region 툴바
         //testGraphView.style.flexGrow = 1;
         //rootVisualElement.Add(testGraphView);
 
-        /*
+        
         var toolbar = new Toolbar();
         var addButton = new ToolbarButton(() =>
         {
@@ -53,7 +53,7 @@ public class GraphWindow : EditorWindow
         addButton.text = "Add Node";
         toolbar.Add(addButton);
         rootVisualElement.Insert(0, toolbar);
-        */
+        
         #endregion
 
         ///////////

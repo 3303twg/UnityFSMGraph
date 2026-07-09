@@ -38,11 +38,33 @@ public class NodeView : Node
 
     void ApplyStyle()
     {
-        // 이건 이제 FSM노드마다 바꾸면 되겠고
-        var color = new Color(0.4f, 0.4f, 0.4f); // 중간 회색 (타이틀바)
 
-        titleContainer.style.backgroundColor = color;
-        mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
+        Color color;
+        if (data.nodeType == NodeType.Entry)
+        {
+            color = new Color32(70, 170, 160, 255);
+
+            titleContainer.style.backgroundColor = color;
+            mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
+        }
+
+        else if(data.nodeType == NodeType.Action)
+        {
+            color = new Color32(185, 115, 35, 255);
+
+            titleContainer.style.backgroundColor = color;
+            mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
+        }
+
+        else
+        {
+            // 이건 이제 FSM노드마다 바꾸면 되겠고
+            color = new Color(0.4f, 0.4f, 0.4f); // 중간 회색 (타이틀바)
+
+            titleContainer.style.backgroundColor = color;
+            mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
+
+        }
     }
 
     void CreatePorts()
@@ -51,10 +73,6 @@ public class NodeView : Node
 
         if(data.nodeType == NodeType.Entry)
         {
-            InputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, typeof(bool));
-            InputPort.portName = "Input";
-            inputContainer.Add(InputPort);
-
             OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
             OutputPort.portName = "Out";
             outputContainer.Add(OutputPort);
