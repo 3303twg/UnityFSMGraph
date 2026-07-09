@@ -6,6 +6,12 @@ public class StateMachine
 {
     public BaseState curState;
 
+
+    public void InitState(BaseState state)
+    {
+        curState = state;
+        curState.Enter();
+    }
     public void ChangeState(BaseState state)
     {
         curState.Exit();

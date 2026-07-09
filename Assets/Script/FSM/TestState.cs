@@ -9,16 +9,16 @@ public class TestState : BaseState
     {
     }
 
-    void Enter()
+    public override void Enter()
     {
 
     }
 
-    void Update()
+    public override void Update()
     {
 
     }
-    void Exit()
+    public override void Exit()
     {
 
     }
