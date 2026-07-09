@@ -6,24 +6,23 @@ using UnityEngine;
 public class EnemyController : MonoBehaviour
 {
     public FSMGraphSo graphSo; //네이밍 꼬라지
-    StateMachine stateMachine;
 
-    public Dictionary<string, BaseState> stateDic = new Dictionary<string, BaseState>();
+    [SerializeField]
+    private StateMachine stateMachine;
+    FSMGraphRuntime graphRuntime;
+    public IFSMNavigator Navigator => graphRuntime;
+
     private void Awake()
     {
         stateMachine = new StateMachine();
+        graphRuntime = new FSMGraphRuntime(graphSo, this, stateMachine);
+        graphRuntime.Init();
 
-        foreach(var node in graphSo.nodes)
-        {
-            if (node.stateSo != null)
-            {
-                stateDic.Add(node.id, node.stateSo.CreateState(this, stateMachine));
-            }
-        }
+
+
     }
     private void Start()
     {
-        stateMachine.ChangeState(stateDic["idle"]);
     }
 
     private void Update()

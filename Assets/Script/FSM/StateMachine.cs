@@ -5,7 +5,7 @@ using UnityEngine;
 public class StateMachine
 {
     public BaseState curState;
-
+    public string CurrentStateName => curState?.GetType().Name ?? "None";
 
     public void InitState(BaseState state)
     {

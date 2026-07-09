@@ -12,7 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d438543a04bc9684db9379c8fb8165ee, type: 3}
   m_Name: New FSM Graph So
   m_EditorClassIdentifier: 
-  entryNodeId: 
+  entryNodeId: entryNode
   id: 
-  nodes: []
-  edges: []
+  nodes:
+  - id: entryNode
+    nodeType: 0
+    title: Entry
+    position: {x: 103, y: 222}
+    stateSo: {fileID: 0}
+  - id: 54969657-bfc2-460f-ba05-bae0df22c352
+    nodeType: 2
+    title: New_Node
+    position: {x: 280, y: 176}
+    stateSo: {fileID: 11400000, guid: fd3c67d9c93266c469967d531de48839, type: 2}
+  - id: c0d64e1f-0ee8-4bab-ad5a-2ec6083508e1
+    nodeType: 2
+    title: New_Node
+    position: {x: 338, y: 339}
+    stateSo: {fileID: 11400000, guid: c61c05dcee0b1974d883c2ce5b83ed7c, type: 2}
+  edges:
+  - id: 
+    outputNodeId: 54969657-bfc2-460f-ba05-bae0df22c352
+    inputNodeId: c0d64e1f-0ee8-4bab-ad5a-2ec6083508e1
+  - id: 
+    outputNodeId: c0d64e1f-0ee8-4bab-ad5a-2ec6083508e1
+    inputNodeId: 54969657-bfc2-460f-ba05-bae0df22c352
