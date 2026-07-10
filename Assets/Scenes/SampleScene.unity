@@ -152,6 +152,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   graphSo: {fileID: 11400000, guid: 78748a18d89edf7459a14f72f794aa86, type: 2}
+  enemyStat:
+    name: 
+    maxHp: 10
+    detectionDistance: 0
+    moveSpeed: 0
 --- !u!4 &513554911
 Transform:
   m_ObjectHideFlags: 0

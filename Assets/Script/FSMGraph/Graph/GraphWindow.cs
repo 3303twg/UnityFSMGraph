@@ -1,7 +1,6 @@
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,6 +9,7 @@ public class GraphWindow : EditorWindow
     private TestGraphView testGraphView;
     private FSMGraphSo currentGraph;
     private GraphWindowInspectorView graphInspectorView;
+
     [MenuItem("Tool/GraphView")]
     static void OpenFromMenu()
     {
@@ -38,13 +38,6 @@ public class GraphWindow : EditorWindow
         VisualElement root = new VisualElement { style = { flexGrow = 1 } };
         rootVisualElement.Add(root);
 
-
-
-        #region 툴바
-        //testGraphView.style.flexGrow = 1;
-        //rootVisualElement.Add(testGraphView);
-
-        
         var toolbar = new Toolbar();
         var addButton = new ToolbarButton(() =>
         {
@@ -53,12 +46,8 @@ public class GraphWindow : EditorWindow
         addButton.text = "Add Node";
         toolbar.Add(addButton);
         rootVisualElement.Insert(0, toolbar);
-        
-        #endregion
 
-        ///////////
         var split = new TwoPaneSplitView(1, 320, TwoPaneSplitViewOrientation.Horizontal);
-
 
         graphInspectorView = new GraphWindowInspectorView();
         testGraphView = new TestGraphView(graph, graphInspectorView);
@@ -72,25 +61,36 @@ public class GraphWindow : EditorWindow
 
         testGraphView.BindSelection();
 
-        /*
-        inspectorView = new FsmGraphInspectorView();
-        graphView = new FsmGraphView(asset, inspectorView);
-        inspectorView.OnNodeDataChanged = () => graphView.RefreshAllNodeViews();
-        inspectorView.OnFocusNodeRequested = FocusNodeInGraph;
-        graphView.BindSelection();
-        graphView.OnGraphChanged += () =>
-        {
-            SaveGraph(silent: true);
-            RefreshNodeViews();
-        };
-
-        split.Add(graphView);
-        split.Add(inspectorView);*/
+        if (EditorApplication.isPlaying && !string.IsNullOrEmpty(FSMGraphRuntimeDebugger.ActiveNodeId))
+            testGraphView.SetActiveNode(FSMGraphRuntimeDebugger.ActiveNodeId);
     }
 
     private void OnEnable()
     {
+        FSMGraphRuntimeDebugger.ActiveNodeChanged += OnActiveNodeChanged;
+        EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+
         if (currentGraph != null)
             LoadGraph(currentGraph);
+    }
+
+    private void OnDisable()
+    {
+        FSMGraphRuntimeDebugger.ActiveNodeChanged -= OnActiveNodeChanged;
+        EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+    }
+
+    void OnActiveNodeChanged(string nodeId)
+    {
+        testGraphView?.SetActiveNode(nodeId);
+    }
+
+    void OnPlayModeStateChanged(PlayModeStateChange state)
+    {
+        if (state == PlayModeStateChange.EnteredEditMode)
+        {
+            testGraphView?.ClearActiveNode();
+            FSMGraphRuntimeDebugger.ClearActiveNode();
+        }
     }
 }

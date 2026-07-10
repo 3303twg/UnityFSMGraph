@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class FSMGraphRuntime : IFSMNavigator
@@ -15,7 +13,6 @@ public class FSMGraphRuntime : IFSMNavigator
     readonly Dictionary<string, List<EdgeData>> outEdges = new();
 
     public string CurrentNodeId { get; set; }
-
 
     public FSMGraphRuntime(FSMGraphSo graph, EnemyController enemyController, StateMachine stateMachine)
     {
@@ -39,7 +36,8 @@ public class FSMGraphRuntime : IFSMNavigator
         */
         BuildCache();
         CurrentNodeId = "54969657-bfc2-460f-ba05-bae0df22c352";
-        stateMachine.InitState(statesByNodeId["54969657-bfc2-460f-ba05-bae0df22c352"]);
+        stateMachine.InitState(statesByNodeId[CurrentNodeId]);
+        FSMGraphRuntimeDebugger.SetActiveNode(CurrentNodeId);
     }
     void BuildCache()
     {
@@ -69,5 +67,6 @@ public class FSMGraphRuntime : IFSMNavigator
         string nextNodeId = outEdges[CurrentNodeId][0].inputNodeId;
         stateMachine.ChangeState(statesByNodeId[nextNodeId]);
         CurrentNodeId = nextNodeId;
+        FSMGraphRuntimeDebugger.SetActiveNode(CurrentNodeId);
     }
 }

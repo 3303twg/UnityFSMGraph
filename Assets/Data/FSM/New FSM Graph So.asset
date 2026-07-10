@@ -28,8 +28,8 @@ MonoBehaviour:
   - id: c0d64e1f-0ee8-4bab-ad5a-2ec6083508e1
     nodeType: 2
     title: New_Node
-    position: {x: 338, y: 339}
-    stateSo: {fileID: 11400000, guid: c61c05dcee0b1974d883c2ce5b83ed7c, type: 2}
+    position: {x: 427, y: 253}
+    stateSo: {fileID: 11400000, guid: 20c79d46e2559a2478c2db3943d24b79, type: 2}
   edges:
   - id: 
     outputNodeId: 54969657-bfc2-460f-ba05-bae0df22c352

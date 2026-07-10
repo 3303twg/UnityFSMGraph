@@ -2,11 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class NodeView : Node
 {
     FSMGraphSo graphSo;
     public NodeData data;
+
+    static readonly Color HighlightBorderColor = new Color32(120, 220, 100, 255);
+    const float HighlightBorderWidth = 3f;
+
+    bool isHighlighted;
 
 
     public string NodeId
@@ -118,5 +124,32 @@ public class NodeView : Node
     public void SyncTitle()
     {
         title = data.title;
+    }
+
+    public void SetRuntimeHighlight(bool on)
+    {
+        if (isHighlighted == on)
+            return;
+
+        isHighlighted = on;
+
+        if (on)
+        {
+            mainContainer.style.borderTopWidth = HighlightBorderWidth;
+            mainContainer.style.borderBottomWidth = HighlightBorderWidth;
+            mainContainer.style.borderLeftWidth = HighlightBorderWidth;
+            mainContainer.style.borderRightWidth = HighlightBorderWidth;
+            mainContainer.style.borderTopColor = HighlightBorderColor;
+            mainContainer.style.borderBottomColor = HighlightBorderColor;
+            mainContainer.style.borderLeftColor = HighlightBorderColor;
+            mainContainer.style.borderRightColor = HighlightBorderColor;
+        }
+        else
+        {
+            mainContainer.style.borderTopWidth = 0;
+            mainContainer.style.borderBottomWidth = 0;
+            mainContainer.style.borderLeftWidth = 0;
+            mainContainer.style.borderRightWidth = 0;
+        }
     }
 }

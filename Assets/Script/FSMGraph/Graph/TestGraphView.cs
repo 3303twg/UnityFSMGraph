@@ -15,6 +15,9 @@ public class TestGraphView : GraphView
     GraphWindowInspectorView inspector;
     public Action OnGraphChanged;
 
+    readonly Dictionary<string, NodeView> nodeViewsById = new();
+    string activeNodeId;
+
     public TestGraphView(FSMGraphSo graphSo, GraphWindowInspectorView graphWindowInspectorView)
     {
         this.graphSo = graphSo;
@@ -40,32 +43,30 @@ public class TestGraphView : GraphView
         graphViewChanged -= OnGraphViewChange;
 
         DeleteElements(graphElements.ToList());
+        nodeViewsById.Clear();
+        activeNodeId = null;
 
         LoadData(graphSo);
 
         graphViewChanged = OnGraphViewChange;
-
     }
 
     public void LoadData(FSMGraphSo graphSo)
     {
         this.graphSo.EnsureEntryNode();
 
-        Dictionary<string, NodeView> nodeViews = new Dictionary<string, NodeView>();
-
-
         foreach (NodeData node in graphSo.nodes)
         {
             NodeView view = new NodeView(node, graphSo);
-            nodeViews[node.id] = view;
+            nodeViewsById[node.id] = view;
 
             AddElement(view);
         }
 
         foreach (EdgeData edgeData in graphSo.edges)
         {
-            if (!nodeViews.TryGetValue(edgeData.outputNodeId, out NodeView outputNode)) continue;
-            if (!nodeViews.TryGetValue(edgeData.inputNodeId, out NodeView inputNode)) continue;
+            if (!nodeViewsById.TryGetValue(edgeData.outputNodeId, out NodeView outputNode)) continue;
+            if (!nodeViewsById.TryGetValue(edgeData.inputNodeId, out NodeView inputNode)) continue;
 
             //true false 받아오던데 필요한가?
             //var outPort = outputNode.GetPortForEdge();
@@ -186,6 +187,9 @@ public class TestGraphView : GraphView
         GraphElement node = new NodeView(entry, graphSo);
         graphSo.nodes.Add(entry);
         AddElement(node);
+
+        if (node is NodeView nodeView)
+            nodeViewsById[entry.id] = nodeView;
     }
 
     public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -230,5 +234,27 @@ public class TestGraphView : GraphView
                 nodeView.SyncTitle();
             }
         }
+    }
+
+    public void SetActiveNode(string nodeId)
+    {
+        if (!string.IsNullOrEmpty(activeNodeId) &&
+            nodeViewsById.TryGetValue(activeNodeId, out NodeView previousNode))
+        {
+            previousNode.SetRuntimeHighlight(false);
+        }
+
+        activeNodeId = nodeId;
+
+        if (string.IsNullOrEmpty(nodeId))
+            return;
+
+        if (nodeViewsById.TryGetValue(nodeId, out NodeView nodeView))
+            nodeView.SetRuntimeHighlight(true);
+    }
+
+    public void ClearActiveNode()
+    {
+        SetActiveNode(null);
     }
 }

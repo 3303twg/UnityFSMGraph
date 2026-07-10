@@ -10,3 +10,19 @@ public enum NodeType
     Monitor,
     Reference
 }
+
+public enum CompareOperatorType
+{
+    Equal,
+    NotEqual,
+    Greater,
+    Less,
+    GreaterOrEqual,
+    LessOrEqual
+}
+
+public enum BlackboardKey
+{
+    CurHp,
+    DetectionDistance,
+}
