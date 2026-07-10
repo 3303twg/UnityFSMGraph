@@ -68,14 +68,13 @@ public class TestGraphView : GraphView
             if (!nodeViewsById.TryGetValue(edgeData.outputNodeId, out NodeView outputNode)) continue;
             if (!nodeViewsById.TryGetValue(edgeData.inputNodeId, out NodeView inputNode)) continue;
 
-            //true false 받아오던데 필요한가?
-            //var outPort = outputNode.GetPortForEdge();
+            PortType outputPortType = ResolveOutputPortType(edgeData);
+            PortType inputPortType = ResolveInputPortType(edgeData);
 
-            //하씨 이거좀 잘따져야겠다
-            Port outPort = outputNode.OutputPort;
-            //if (outPort == null || inputNode.InputPort == null) continue;
+            if (!outputNode.TryGetPort(outputPortType, out Port outPort)) continue;
+            if (!inputNode.TryGetPort(inputPortType, out Port inPort)) continue;
 
-            Edge edge = outPort.ConnectTo(inputNode.InputPort);
+            Edge edge = outPort.ConnectTo(inPort);
             edge.userData = edgeData;
             AddElement(edge);
         }
@@ -93,10 +92,20 @@ public class TestGraphView : GraphView
                 NodeView input = edge.input.node as NodeView;
                 if (output == null || input == null) continue;
 
+                PortType outputPortType = edge.output.userData is PortType outputType
+                    ? outputType
+                    : NodeView.PortTypeFromName(edge.output.portName);
+                PortType inputPortType = edge.input.userData is PortType inputType
+                    ? inputType
+                    : NodeView.PortTypeFromName(edge.input.portName);
+
                 EdgeData edgeData = new EdgeData
                 {
                     outputNodeId = output.NodeId,
                     inputNodeId = input.NodeId,
+                    outputPortType = outputPortType,
+                    inputPortType = inputPortType,
+                    outPortName = edge.output.portName
                 };
                 graphSo.edges.Add(edgeData);
                 edge.userData = edgeData;
@@ -192,14 +201,37 @@ public class TestGraphView : GraphView
             nodeViewsById[entry.id] = nodeView;
     }
 
+    public void CreateCompareNode(Vector2 pos)
+    {
+        var entry = new NodeData
+        {
+            title = "New_CompareNode",
+            nodeType = NodeType.Transition,
+            position = pos
+        };
+
+        GraphElement node = new NodeView(entry, graphSo);
+        graphSo.nodes.Add(entry);
+        AddElement(node);
+
+        if (node is NodeView nodeView)
+            nodeViewsById[entry.id] = nodeView;
+    }
+
     public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
     {
         base.BuildContextualMenu(evt);
 
-        evt.menu.AppendAction("Add Node", action =>
+        evt.menu.AppendAction("Add Node/Action", action =>
         {
             var pos = contentViewContainer.WorldToLocal(action.eventInfo.localMousePosition);
             CreateNode(pos);
+        });
+
+        evt.menu.AppendAction("Add Node/Compare", action =>
+        {
+            var pos = contentViewContainer.WorldToLocal(action.eventInfo.localMousePosition);
+            CreateCompareNode(pos);
         });
     }
 
@@ -256,5 +288,18 @@ public class TestGraphView : GraphView
     public void ClearActiveNode()
     {
         SetActiveNode(null);
+    }
+
+    static PortType ResolveOutputPortType(EdgeData edgeData)
+    {
+        if (!string.IsNullOrEmpty(edgeData.outPortName))
+            return NodeView.PortTypeFromName(edgeData.outPortName);
+
+        return edgeData.outputPortType;
+    }
+
+    static PortType ResolveInputPortType(EdgeData edgeData)
+    {
+        return edgeData.inputPortType;
     }
 }

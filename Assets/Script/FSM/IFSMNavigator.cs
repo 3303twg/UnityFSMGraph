@@ -7,4 +7,6 @@ public interface IFSMNavigator
     string CurrentNodeId { get; }
     //void GotoNode(string nodeId);
     void GoToNextNode();
+    void GoToTrueNode();
+    void GoToFalseNode();
 }

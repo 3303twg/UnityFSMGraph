@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: CompareOperator
   m_EditorClassIdentifier: 
   compareOperator: 0
+  leftKey: 0
+  rightKey: 7

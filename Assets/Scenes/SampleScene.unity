@@ -155,6 +155,7 @@ MonoBehaviour:
   enemyStat:
     name: 
     maxHp: 10
+    hp: 0
     detectionDistance: 0
     moveSpeed: 0
 --- !u!4 &513554911

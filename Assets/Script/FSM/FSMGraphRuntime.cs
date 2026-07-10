@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.iOS;
 
 public class FSMGraphRuntime : IFSMNavigator
 {
@@ -10,6 +11,7 @@ public class FSMGraphRuntime : IFSMNavigator
     //readonly Dictionary<string, BaseState> stateDic = new Dictionary<string, BaseState>();
 
     readonly Dictionary<string, BaseState> statesByNodeId = new();
+    readonly Dictionary<(string nodeId, PortType port), string> nextNodeByPort = new();
     readonly Dictionary<string, List<EdgeData>> outEdges = new();
 
     public string CurrentNodeId { get; set; }
@@ -35,7 +37,7 @@ public class FSMGraphRuntime : IFSMNavigator
         }
         */
         BuildCache();
-        CurrentNodeId = "54969657-bfc2-460f-ba05-bae0df22c352";
+        CurrentNodeId = "1690a348-dea1-4402-8ab2-e805700395fe";
         stateMachine.InitState(statesByNodeId[CurrentNodeId]);
         FSMGraphRuntimeDebugger.SetActiveNode(CurrentNodeId);
     }
@@ -44,7 +46,8 @@ public class FSMGraphRuntime : IFSMNavigator
 
         foreach (var node in graph.nodes)
         {
-            if (node.nodeType != NodeType.Action) continue;
+            if (node.nodeType != NodeType.Action && node.nodeType != NodeType.Transition) continue;
+
             if (node.stateSo == null) continue;
             statesByNodeId[node.id] = node.stateSo.CreateState(enemyController, stateMachine);
             Debug.Log(node.id);
@@ -52,21 +55,43 @@ public class FSMGraphRuntime : IFSMNavigator
 
         foreach (var edge in graph.edges)
         {
-            if (!outEdges.TryGetValue(edge.outputNodeId, out var list))
-            {
-                list = new List<EdgeData>();
-                outEdges[edge.outputNodeId] = list;
-            }
-            list.Add(edge);
+            PortType port = ToPortType(edge);
+
+            nextNodeByPort[(edge.outputNodeId, port)] = edge.inputNodeId;
         }
 
     }
-    public void GoToNextNode()
-    {
 
-        string nextNodeId = outEdges[CurrentNodeId][0].inputNodeId;
-        stateMachine.ChangeState(statesByNodeId[nextNodeId]);
+    PortType ToPortType(EdgeData edge)
+    {
+        // enum 바꿨으면 edge.outputPortType 그대로
+        return edge.outPortName switch
+        {
+            "True" => PortType.True,
+            "False" => PortType.False,
+            "Out" => PortType.Output,
+            _ => PortType.Output
+        };
+    }
+
+    public void GoToPort(PortType portType)
+    {
+        if (!nextNodeByPort.TryGetValue((CurrentNodeId, portType), out string nextNodeId))
+        {
+            Debug.LogWarning($"엣지 없음: {CurrentNodeId} / {portType}");
+            return;
+        }
+        if (!statesByNodeId.TryGetValue(nextNodeId, out BaseState nextState))
+        {
+            Debug.LogWarning($"State 없음: {nextNodeId}");
+            return;
+        }
         CurrentNodeId = nextNodeId;
+        stateMachine.ChangeState(nextState);
         FSMGraphRuntimeDebugger.SetActiveNode(CurrentNodeId);
     }
+
+    public void GoToNextNode() => GoToPort(PortType.Output);
+    public void GoToTrueNode() => GoToPort(PortType.True);
+    public void GoToFalseNode() => GoToPort(PortType.False);
 }

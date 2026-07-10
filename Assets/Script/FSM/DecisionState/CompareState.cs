@@ -34,10 +34,12 @@ public class CompareState : BaseState
         if(Compare(left, right))
         {
             Debug.Log("참트루");
+            enemyController.Navigator.GoToTrueNode();
         }
         else
         {
             Debug.Log("뻘스");
+            enemyController.Navigator.GoToFalseNode();
         }
     }
 

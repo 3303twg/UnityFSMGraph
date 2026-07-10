@@ -24,8 +24,32 @@ public class NodeView : Node
     }
     //포트 데이터는 있어야지
     //포트 세팅이 없네 만들어야함
-    public Port InputPort { get; private set; }
-    public Port OutputPort { get; private set; }
+    public Dictionary<PortType, Port> portDic = new Dictionary<PortType, Port>();
+
+    public bool TryGetPort(PortType portType, out Port port)
+        => portDic.TryGetValue(portType, out port);
+
+    public static PortType PortTypeFromName(string portName)
+    {
+        return portName switch
+        {
+            "True" => PortType.True,
+            "False" => PortType.False,
+            "Out" => PortType.Output,
+            "Input" => PortType.Input,
+            _ => PortType.Output
+        };
+    }
+
+    Port AddPort(PortType portType, Direction direction, Port.Capacity capacity, string portName, VisualElement container)
+    {
+        var port = InstantiatePort(Orientation.Horizontal, direction, capacity, typeof(bool));
+        port.portName = portName;
+        port.userData = portType;
+        portDic[portType] = port;
+        container.Add(port);
+        return port;
+    }
 
 
     public NodeView(NodeData data, FSMGraphSo graphSo)
@@ -62,6 +86,13 @@ public class NodeView : Node
             mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
         }
 
+        else if(data.nodeType == NodeType.Transition)
+        {
+            color = new Color32(130, 90, 175, 255);
+
+            titleContainer.style.backgroundColor = color;
+            mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
+        }
         else
         {
             // 이건 이제 FSM노드마다 바꾸면 되겠고
@@ -79,14 +110,14 @@ public class NodeView : Node
 
         if(data.nodeType == NodeType.Entry)
         {
-            OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
-            OutputPort.portName = "Out";
-            outputContainer.Add(OutputPort);
+            AddPort(PortType.Output, Direction.Output, Port.Capacity.Single, "Out", outputContainer);
         }
 
         else if (data.nodeType == NodeType.Transition)
         {
-
+            AddPort(PortType.Input, Direction.Input, Port.Capacity.Multi, "Input", inputContainer);
+            AddPort(PortType.True, Direction.Output, Port.Capacity.Single, "True", outputContainer);
+            AddPort(PortType.False, Direction.Output, Port.Capacity.Single, "False", outputContainer);
         }
 
         else if(data.nodeType == NodeType.Monitor)
@@ -96,20 +127,13 @@ public class NodeView : Node
 
         else if(data.nodeType == NodeType.Action)
         {
-            InputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, typeof(bool));
-            InputPort.portName = "Input";
-            inputContainer.Add(InputPort);
-
-            OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
-            OutputPort.portName = "Out";
-            outputContainer.Add(OutputPort);
+            AddPort(PortType.Input, Direction.Input, Port.Capacity.Multi, "Input", inputContainer);
+            AddPort(PortType.Output, Direction.Output, Port.Capacity.Single, "Out", outputContainer);
         }
 
         else if(data.nodeType == NodeType.Reference)
         {
-            OutputPort = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(bool));
-            OutputPort.portName = "Out";
-            outputContainer.Add(OutputPort);
+            AddPort(PortType.Output, Direction.Output, Port.Capacity.Single, "Out", outputContainer);
         }
 
         RefreshExpandedState();

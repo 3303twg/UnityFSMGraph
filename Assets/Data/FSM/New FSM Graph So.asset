@@ -18,22 +18,56 @@ MonoBehaviour:
   - id: entryNode
     nodeType: 0
     title: Entry
-    position: {x: 103, y: 222}
+    position: {x: 80, y: 200}
     stateSo: {fileID: 0}
-  - id: 54969657-bfc2-460f-ba05-bae0df22c352
+  - id: 1690a348-dea1-4402-8ab2-e805700395fe
     nodeType: 2
     title: New_Node
-    position: {x: 280, y: 176}
-    stateSo: {fileID: 11400000, guid: fd3c67d9c93266c469967d531de48839, type: 2}
-  - id: c0d64e1f-0ee8-4bab-ad5a-2ec6083508e1
-    nodeType: 2
-    title: New_Node
-    position: {x: 427, y: 253}
+    position: {x: 192, y: 213}
+    stateSo: {fileID: 11400000, guid: c61c05dcee0b1974d883c2ce5b83ed7c, type: 2}
+  - id: c3b65c8e-d678-4466-930a-c42fd9086aab
+    nodeType: 1
+    title: New_CompareNode
+    position: {x: 393, y: 213}
     stateSo: {fileID: 11400000, guid: 20c79d46e2559a2478c2db3943d24b79, type: 2}
+  - id: 97cd9034-3a92-4ffd-b6b4-0599907bceb5
+    nodeType: 2
+    title: New_Node
+    position: {x: 542, y: 468}
+    stateSo: {fileID: 11400000, guid: fd3c67d9c93266c469967d531de48839, type: 2}
+  - id: 56961bf2-72a5-4c9c-92a3-6108c4e43493
+    nodeType: 2
+    title: New_Node
+    position: {x: 601.4501, y: 212.75002}
+    stateSo: {fileID: 11400000, guid: 96ff5b6a51a7f9643935a8dce64397a2, type: 2}
   edges:
   - id: 
-    outputNodeId: 54969657-bfc2-460f-ba05-bae0df22c352
-    inputNodeId: c0d64e1f-0ee8-4bab-ad5a-2ec6083508e1
+    outputNodeId: 1690a348-dea1-4402-8ab2-e805700395fe
+    inputNodeId: c3b65c8e-d678-4466-930a-c42fd9086aab
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
   - id: 
-    outputNodeId: c0d64e1f-0ee8-4bab-ad5a-2ec6083508e1
-    inputNodeId: 54969657-bfc2-460f-ba05-bae0df22c352
+    outputNodeId: c3b65c8e-d678-4466-930a-c42fd9086aab
+    inputNodeId: 56961bf2-72a5-4c9c-92a3-6108c4e43493
+    outputPortType: 2
+    inputPortType: 0
+    outPortName: True
+  - id: 
+    outputNodeId: c3b65c8e-d678-4466-930a-c42fd9086aab
+    inputNodeId: 97cd9034-3a92-4ffd-b6b4-0599907bceb5
+    outputPortType: 3
+    inputPortType: 0
+    outPortName: False
+  - id: 
+    outputNodeId: 97cd9034-3a92-4ffd-b6b4-0599907bceb5
+    inputNodeId: 1690a348-dea1-4402-8ab2-e805700395fe
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: 56961bf2-72a5-4c9c-92a3-6108c4e43493
+    inputNodeId: 1690a348-dea1-4402-8ab2-e805700395fe
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out

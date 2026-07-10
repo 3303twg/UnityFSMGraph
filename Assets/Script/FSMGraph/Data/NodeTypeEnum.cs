@@ -11,6 +11,14 @@ public enum NodeType
     Reference
 }
 
+public enum PortType
+{
+    Input,
+    Output,
+    True,
+    False
+}
+
 public enum CompareOperatorType
 {
     Equal,

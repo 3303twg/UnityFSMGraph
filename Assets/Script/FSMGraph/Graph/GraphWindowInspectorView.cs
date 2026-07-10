@@ -82,29 +82,32 @@ public class GraphWindowInspectorView : VisualElement
                 break;
 
             case NodeType.Action:
-                ObjectField objectField = new ObjectField("StateSo")
-                {
-                    objectType = typeof(BaseStateSoAsset),
-                    value = node.stateSo,
-                };
-                objectField.RegisterValueChangedCallback(evt =>
-                {
-                    node.stateSo = evt.newValue as BaseStateSoAsset;
-                    MarkDirty();
-                    RebuildNodeInspector();
-                });
-                root.Add(objectField);
-
-                if(node.stateSo != null)
-                {
-
-
-                    var so = new SerializedObject(node.stateSo);
-                    var inspector = new InspectorElement(so);
-                    root.Add(MakeSection("So인스펙터", inspector));
-                }
+                
                 break;
+            case NodeType.Transition:
+                
+                break;
+        }
+        ObjectField objectField = new ObjectField("StateSo")
+        {
+            objectType = typeof(BaseStateSoAsset),
+            value = node.stateSo,
+        };
+        objectField.RegisterValueChangedCallback(evt =>
+        {
+            node.stateSo = evt.newValue as BaseStateSoAsset;
+            MarkDirty();
+            RebuildNodeInspector();
+        });
+        root.Add(objectField);
 
+        if (node.stateSo != null)
+        {
+
+
+            var so = new SerializedObject(node.stateSo);
+            var inspector = new InspectorElement(so);
+            root.Add(MakeSection("So인스펙터", inspector));
         }
     }
 

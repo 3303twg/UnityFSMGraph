@@ -10,4 +10,7 @@ public class EdgeData
     public string id;
     public string outputNodeId;
     public string inputNodeId;
+    public PortType outputPortType;
+    public PortType inputPortType = PortType.Input;
+    public string outPortName;
 }
