@@ -10,13 +10,13 @@ public class StateMachine
     public void InitState(BaseState state)
     {
         curState = state;
-        curState.Enter();
+        curState?.Enter();
     }
     public void ChangeState(BaseState state)
     {
-        curState.Exit();
+        curState?.Exit();
         curState = state;
-        curState.Enter();
+        curState?.Enter();
     }
 
     public void Update()

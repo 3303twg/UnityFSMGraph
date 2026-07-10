@@ -1,28 +1,34 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    public FSMGraphSo graphSo; //네이밍 꼬라지
+    public FSMGraphSo graphSo;
 
     [SerializeField]
     public BaseStat enemyStat;
 
     [SerializeField]
     private StateMachine stateMachine;
+
     FSMGraphRuntime graphRuntime;
+
+    [SerializeReference]
+    BaseState runtimeDebugState;
+
     public IFSMNavigator Navigator => graphRuntime;
+    public FSMGraphRuntime GraphRuntime => graphRuntime;
+    public BaseState RuntimeDebugState
+    {
+        get => runtimeDebugState;
+        set => runtimeDebugState = value;
+    }
 
     public Dictionary<BlackboardKey, object> blackboard = new Dictionary<BlackboardKey, object>();
 
     public void Init()
     {
-        // 여기에 데이터 기반으로 스텟 세팅하는게 있다치고
         enemyStat.hp = enemyStat.maxHp;
-
         InitBlackboard();
     }
 
@@ -36,6 +42,11 @@ public class EnemyController : MonoBehaviour
         return blackboard[key];
     }
 
+    public void SetBlackboardValue(BlackboardKey key, object value)
+    {
+        blackboard[key] = value;
+    }
+
     private void Awake()
     {
         Init();
@@ -43,15 +54,11 @@ public class EnemyController : MonoBehaviour
         graphRuntime = new FSMGraphRuntime(graphSo, this, stateMachine);
         graphRuntime.Init();
     }
-    private void Start()
-    {
-    }
 
     private void Update()
     {
-        stateMachine?.Update();   
+        stateMachine?.Update();
     }
-
 
     [ContextMenu("TakeDamage")]
     public void TakeDamage()

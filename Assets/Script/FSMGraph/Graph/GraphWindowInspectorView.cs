@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,27 +11,32 @@ public class GraphWindowInspectorView : VisualElement
     EdgeData boundEdge;
     FSMGraphSo graphDataSo;
 
+    EnemyController boundController;
+    SerializedObject boundControllerSo;
+    VisualElement runtimeStateInspector;
+
     public Action OnNodeDataChanged;
+
     public GraphWindowInspectorView()
     {
-        //바꿔도 댈듯?
         style.minWidth = 280;
         style.paddingLeft = 8;
         style.paddingRight = 8;
         style.paddingTop = 8;
         style.backgroundColor = new Color(0.18f, 0.18f, 0.2f);
-        //style.backgroundColor = new Color(255, 255, 255);
 
         root = new VisualElement();
         Add(root);
         Clear();
+
+        RegisterCallback<DetachFromPanelEvent>(_ => UnbindRuntimeInspector());
     }
 
     public void Clear()
     {
         boundNode = null;
         boundEdge = null;
-        //base.Clear();
+        UnbindRuntimeInspector();
         root.Clear();
         root.Add(new Label("인스펙터 리셋 완료"));
     }
@@ -46,6 +48,7 @@ public class GraphWindowInspectorView : VisualElement
         graphDataSo = graph;
         RebuildNodeInspector();
     }
+
     public void BindEdge(EdgeData edgeData, FSMGraphSo graph)
     {
         boundNode = null;
@@ -53,14 +56,30 @@ public class GraphWindowInspectorView : VisualElement
         graphDataSo = graph;
         RebuildEdgeInspector();
     }
+
     public void RebuildNodeInspector()
     {
+        UnbindRuntimeInspector();
         root.Clear();
 
         if (boundNode == null) return;
 
-        root.Add(MakeHeader("Node:" + boundNode.nodeType.ToString()));
+        bool isPlaying = EditorApplication.isPlaying;
 
+        root.Add(MakeHeader(isPlaying ? "Play Mode" : "Edit Mode"));
+        root.Add(MakeHeader("Node: " + boundNode.nodeType));
+
+        if (!isPlaying)
+        {
+            BuildEditModeNodeInspector(boundNode);
+            return;
+        }
+
+        BuildPlayModeNodeInspector(boundNode);
+    }
+
+    void BuildEditModeNodeInspector(NodeData node)
+    {
         TextField titleField = new TextField("Title") { value = boundNode.title };
         titleField.RegisterValueChangedCallback(evt =>
         {
@@ -69,25 +88,12 @@ public class GraphWindowInspectorView : VisualElement
         });
         root.Add(titleField);
 
-        BuildNodeTypeFields(boundNode);
-    }
-
-    void BuildNodeTypeFields(NodeData node)
-    {
-        switch (node.nodeType)
+        if (node.nodeType == NodeType.Entry)
         {
-            
-            case NodeType.Entry:
-                root.Add(new Label("엔트리 노드"));
-                break;
-
-            case NodeType.Action:
-                
-                break;
-            case NodeType.Transition:
-                
-                break;
+            root.Add(new Label("엔트리 노드"));
+            return;
         }
+
         ObjectField objectField = new ObjectField("StateSo")
         {
             objectType = typeof(BaseStateSoAsset),
@@ -101,23 +107,154 @@ public class GraphWindowInspectorView : VisualElement
         });
         root.Add(objectField);
 
-        if (node.stateSo != null)
+        if (node.stateSo == null) return;
+
+        var so = new SerializedObject(node.stateSo);
+        var inspector = new InspectorElement(so);
+        root.Add(MakeSection("State SO (원본)", inspector));
+    }
+
+    void BuildPlayModeNodeInspector(NodeData node)
+    {
+        root.Add(new Label($"Title: {node.title}"));
+
+        boundController = FindController(graphDataSo);
+        if (boundController == null)
         {
-
-
-            var so = new SerializedObject(node.stateSo);
-            var inspector = new InspectorElement(so);
-            root.Add(MakeSection("So인스펙터", inspector));
+            root.Add(new Label("이 그래프를 실행 중인 EnemyController가 없습니다."));
+            return;
         }
+
+        BuildBlackboardFields(boundController);
+
+        if (node.nodeType == NodeType.Entry || node.stateSo == null)
+        {
+            root.Add(new Label("런타임 State 없음"));
+            return;
+        }
+
+        if (!boundController.GraphRuntime.TryGetState(node.id, out BaseState runtimeState))
+        {
+            root.Add(new Label("이 노드의 런타임 State가 없습니다."));
+            return;
+        }
+
+        boundController.RuntimeDebugState = runtimeState;
+
+        boundControllerSo = new SerializedObject(boundController);
+        boundControllerSo.Update();
+
+        SerializedProperty stateProp = boundControllerSo.FindProperty("runtimeDebugState");
+        if (stateProp == null)
+        {
+            root.Add(new Label("runtimeDebugState 프로퍼티를 찾을 수 없습니다."));
+            return;
+        }
+
+        var propertyField = new PropertyField(stateProp);
+        propertyField.Bind(boundControllerSo);
+        runtimeStateInspector = propertyField;
+        root.Add(MakeSection("Runtime State (플레이 중만 반영)", propertyField));
+
+        var reEvaluateButton = new Button(() =>
+        {
+            if (runtimeState is CompareState compareState)
+            {
+                boundController.GraphRuntime.CurrentNodeId = node.id;
+                compareState.Enter();
+            }
+        })
+        {
+            text = "Compare Re-Evaluate"
+        };
+        reEvaluateButton.style.marginTop = 8;
+        root.Add(reEvaluateButton);
+
+        EditorApplication.update -= OnEditorUpdate;
+        EditorApplication.update += OnEditorUpdate;
+    }
+
+    void BuildBlackboardFields(EnemyController controller)
+    {
+        var section = new VisualElement();
+
+        foreach (BlackboardKey key in Enum.GetValues(typeof(BlackboardKey)))
+        {
+            if (!controller.blackboard.TryGetValue(key, out object value))
+                continue;
+
+            if (value is float floatValue)
+            {
+                var field = new FloatField(key.ToString()) { value = floatValue };
+                field.RegisterValueChangedCallback(evt =>
+                {
+                    controller.SetBlackboardValue(key, evt.newValue);
+                    if (key == BlackboardKey.CurHp)
+                        controller.enemyStat.hp = evt.newValue;
+                });
+                section.Add(field);
+                continue;
+            }
+
+            if (value is int intValue)
+            {
+                var field = new IntegerField(key.ToString()) { value = intValue };
+                field.RegisterValueChangedCallback(evt => controller.SetBlackboardValue(key, evt.newValue));
+                section.Add(field);
+                continue;
+            }
+
+            section.Add(new Label($"{key}: {value}"));
+        }
+
+        root.Add(MakeSection("Blackboard (런타임 값)", section));
+    }
+
+    void OnEditorUpdate()
+    {
+        if (!EditorApplication.isPlaying || boundControllerSo == null)
+            return;
+
+        boundControllerSo.Update();
+
+        if (boundControllerSo.hasModifiedProperties)
+            boundControllerSo.ApplyModifiedProperties();
+    }
+
+    void UnbindRuntimeInspector()
+    {
+        EditorApplication.update -= OnEditorUpdate;
+        boundController = null;
+        boundControllerSo = null;
+        runtimeStateInspector = null;
+    }
+
+    static EnemyController FindController(FSMGraphSo graph)
+    {
+        if (graph == null) return null;
+
+        var controllers = UnityEngine.Object.FindObjectsOfType<EnemyController>();
+        foreach (var controller in controllers)
+        {
+            if (controller.graphSo == graph)
+                return controller;
+        }
+
+        return null;
     }
 
     public void RebuildEdgeInspector()
     {
+        UnbindRuntimeInspector();
         root.Clear();
 
         if (boundEdge == null) return;
-    }
 
+        root.Add(MakeHeader("Edge"));
+        root.Add(new Label($"From: {boundEdge.outputNodeId}"));
+        root.Add(new Label($"To: {boundEdge.inputNodeId}"));
+        root.Add(new Label($"Port: {boundEdge.outputPortType}"));
+    }
 
     Label MakeHeader(string text)
     {
@@ -126,6 +263,7 @@ public class GraphWindowInspectorView : VisualElement
         label.style.marginBottom = 6;
         return label;
     }
+
     void MarkDirty()
     {
         if (graphDataSo != null)
@@ -133,9 +271,6 @@ public class GraphWindowInspectorView : VisualElement
         OnNodeDataChanged?.Invoke();
     }
 
-
-
-    //예쁜 박스만들기
     VisualElement MakeSection(string title, VisualElement content)
     {
         var section = new VisualElement();

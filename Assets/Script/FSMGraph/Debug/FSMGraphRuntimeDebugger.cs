@@ -1,5 +1,7 @@
 using System;
 
+
+//이건 에디터만 하게 하지 않을까?
 public static class FSMGraphRuntimeDebugger
 {
     public static string ActiveNodeId { get; private set; }

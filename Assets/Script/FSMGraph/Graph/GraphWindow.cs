@@ -91,6 +91,15 @@ public class GraphWindow : EditorWindow
         {
             testGraphView?.ClearActiveNode();
             FSMGraphRuntimeDebugger.ClearActiveNode();
+
+            foreach (var controller in FindObjectsOfType<EnemyController>())
+                controller.RuntimeDebugState = null;
+        }
+
+        if (state == PlayModeStateChange.EnteredPlayMode ||
+            state == PlayModeStateChange.EnteredEditMode)
+        {
+            graphInspectorView?.RebuildNodeInspector();
         }
     }
 }

@@ -1,11 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
+[Serializable]
 public abstract class BaseState
 {
-    protected EnemyController enemyController;
-    protected StateMachine stateMachine;
+    [NonSerialized] protected EnemyController enemyController;
+    [NonSerialized] protected StateMachine stateMachine;
 
     public BaseState(EnemyController enemyController, StateMachine stateMachine)
     {
@@ -16,5 +16,4 @@ public abstract class BaseState
     public virtual void Enter() { }
     public virtual void Update() { }
     public virtual void Exit() { }
-
 }

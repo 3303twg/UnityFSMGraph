@@ -15,6 +15,7 @@ public class FSMGraphRuntime : IFSMNavigator
     readonly Dictionary<string, List<EdgeData>> outEdges = new();
 
     public string CurrentNodeId { get; set; }
+    public FSMGraphSo Graph => graph;
 
     public FSMGraphRuntime(FSMGraphSo graph, EnemyController enemyController, StateMachine stateMachine)
     {
@@ -37,16 +38,18 @@ public class FSMGraphRuntime : IFSMNavigator
         }
         */
         BuildCache();
-        CurrentNodeId = "1690a348-dea1-4402-8ab2-e805700395fe";
-        stateMachine.InitState(statesByNodeId[CurrentNodeId]);
-        FSMGraphRuntimeDebugger.SetActiveNode(CurrentNodeId);
+        CurrentNodeId = "entryNode";
+        GoToPort(PortType.Output);
+        //stateMachine.ChangeState(statesByNodeId[CurrentNodeId]);
+        //FSMGraphRuntimeDebugger.SetActiveNode(CurrentNodeId);
     }
     void BuildCache()
     {
 
         foreach (var node in graph.nodes)
         {
-            if (node.nodeType != NodeType.Action && node.nodeType != NodeType.Transition) continue;
+            //일단 모든 노드 캐싱하는게?
+            //if (node.nodeType != NodeType.Action && node.nodeType != NodeType.Transition) continue;
 
             if (node.stateSo == null) continue;
             statesByNodeId[node.id] = node.stateSo.CreateState(enemyController, stateMachine);
@@ -94,4 +97,7 @@ public class FSMGraphRuntime : IFSMNavigator
     public void GoToNextNode() => GoToPort(PortType.Output);
     public void GoToTrueNode() => GoToPort(PortType.True);
     public void GoToFalseNode() => GoToPort(PortType.False);
+
+    public bool TryGetState(string nodeId, out BaseState state)
+        => statesByNodeId.TryGetValue(nodeId, out state);
 }
