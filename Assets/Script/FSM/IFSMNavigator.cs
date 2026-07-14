@@ -9,4 +9,6 @@ public interface IFSMNavigator
     void GoToNextNode();
     void GoToTrueNode();
     void GoToFalseNode();
+
+    void GoToPortFrom(string nodeId, PortType portType);
 }

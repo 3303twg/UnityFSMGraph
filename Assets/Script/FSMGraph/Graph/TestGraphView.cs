@@ -218,6 +218,23 @@ public class TestGraphView : GraphView
             nodeViewsById[entry.id] = nodeView;
     }
 
+    public void CreateMonitorNode(Vector2 pos)
+    {
+        var entry = new NodeData
+        {
+            title = "New_MonitorNode",
+            nodeType = NodeType.Monitor,
+            position = pos
+        };
+
+        GraphElement node = new NodeView(entry, graphSo);
+        graphSo.nodes.Add(entry);
+        AddElement(node);
+
+        if (node is NodeView nodeView)
+            nodeViewsById[entry.id] = nodeView;
+    }
+
     public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
     {
         base.BuildContextualMenu(evt);
@@ -232,6 +249,12 @@ public class TestGraphView : GraphView
         {
             var pos = contentViewContainer.WorldToLocal(action.eventInfo.localMousePosition);
             CreateCompareNode(pos);
+        });
+
+        evt.menu.AppendAction("Add Node/Monitor", action =>
+        {
+            var pos = contentViewContainer.WorldToLocal(action.eventInfo.localMousePosition);
+            CreateMonitorNode(pos);
         });
     }
 

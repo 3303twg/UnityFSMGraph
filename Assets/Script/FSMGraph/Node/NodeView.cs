@@ -86,9 +86,17 @@ public class NodeView : Node
             mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
         }
 
-        else if(data.nodeType == NodeType.Transition)
+        else if (data.nodeType == NodeType.Transition)
         {
             color = new Color32(130, 90, 175, 255);
+
+            titleContainer.style.backgroundColor = color;
+            mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
+        }
+
+        else if (data.nodeType == NodeType.Monitor)
+        {
+            color = new Color32(30, 120, 25, 255);
 
             titleContainer.style.backgroundColor = color;
             mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
@@ -122,6 +130,7 @@ public class NodeView : Node
 
         else if(data.nodeType == NodeType.Monitor)
         {
+            AddPort(PortType.Output, Direction.Output, Port.Capacity.Single, "Out", outputContainer);
             return;
         }
 

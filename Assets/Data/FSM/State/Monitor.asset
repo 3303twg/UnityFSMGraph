@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d04f31c8395e9e34aa184eea2a801732, type: 3}
-  m_Name: CompareOperator
+  m_Script: {fileID: 11500000, guid: 4ff400bc917638c45a16830d20c041e7, type: 3}
+  m_Name: Monitor
   m_EditorClassIdentifier: 
   compareOperator: 0
   leftKey: 0
-  rightKey: 10
+  rightKey: 0

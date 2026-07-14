@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class EnemyController : MonoBehaviour
 {
@@ -53,11 +54,22 @@ public class EnemyController : MonoBehaviour
         stateMachine = new StateMachine();
         graphRuntime = new FSMGraphRuntime(graphSo, this, stateMachine);
         graphRuntime.Init();
+        foreach (var monitor in graphRuntime.monitorList)
+        {
+            if (monitor is IFSMMonitor fsmMonitor)
+            {
+                fsmMonitor.Init();
+            }
+        }
     }
 
     private void Update()
     {
         stateMachine?.Update();
+        foreach(var monitor in graphRuntime.monitorList)
+        {
+            monitor?.Update();
+        }
     }
 
     [ContextMenu("TakeDamage")]

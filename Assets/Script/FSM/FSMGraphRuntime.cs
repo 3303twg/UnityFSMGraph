@@ -17,6 +17,7 @@ public class FSMGraphRuntime : IFSMNavigator
     public string CurrentNodeId { get; set; }
     public FSMGraphSo Graph => graph;
 
+    public List<BaseState> monitorList = new List<BaseState>();
     public FSMGraphRuntime(FSMGraphSo graph, EnemyController enemyController, StateMachine stateMachine)
     {
         this.graph = graph;
@@ -52,7 +53,16 @@ public class FSMGraphRuntime : IFSMNavigator
             //if (node.nodeType != NodeType.Action && node.nodeType != NodeType.Transition) continue;
 
             if (node.stateSo == null) continue;
+            
             statesByNodeId[node.id] = node.stateSo.CreateState(enemyController, stateMachine);
+            if (node.nodeType == NodeType.Monitor)
+            {
+                monitorList.Add(statesByNodeId[node.id]);
+                if(statesByNodeId[node.id] is MonitorState monitorState)
+                {
+                    monitorState.nodeId = node.id;
+                }
+            }
             Debug.Log(node.id);
         }
 
@@ -82,6 +92,23 @@ public class FSMGraphRuntime : IFSMNavigator
         if (!nextNodeByPort.TryGetValue((CurrentNodeId, portType), out string nextNodeId))
         {
             Debug.LogWarning($"엣지 없음: {CurrentNodeId} / {portType}");
+            return;
+        }
+        if (!statesByNodeId.TryGetValue(nextNodeId, out BaseState nextState))
+        {
+            Debug.LogWarning($"State 없음: {nextNodeId}");
+            return;
+        }
+        CurrentNodeId = nextNodeId;
+        stateMachine.ChangeState(nextState);
+        FSMGraphRuntimeDebugger.SetActiveNode(CurrentNodeId);
+    }
+
+    public void GoToPortFrom(string nodeId, PortType portType)
+    {
+        if (!nextNodeByPort.TryGetValue((nodeId, portType), out string nextNodeId))
+        {
+            Debug.LogWarning($"엣지 없음: {nodeId} / {portType}");
             return;
         }
         if (!statesByNodeId.TryGetValue(nextNodeId, out BaseState nextState))

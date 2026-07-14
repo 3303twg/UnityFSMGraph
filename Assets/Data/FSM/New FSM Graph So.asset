@@ -18,28 +18,48 @@ MonoBehaviour:
   - id: entryNode
     nodeType: 0
     title: Entry
-    position: {x: 80, y: 200}
+    position: {x: 20, y: 200}
     stateSo: {fileID: 0}
   - id: 1690a348-dea1-4402-8ab2-e805700395fe
     nodeType: 2
     title: New_Node
-    position: {x: 192, y: 213}
+    position: {x: 224, y: 313}
     stateSo: {fileID: 11400000, guid: c61c05dcee0b1974d883c2ce5b83ed7c, type: 2}
   - id: c3b65c8e-d678-4466-930a-c42fd9086aab
     nodeType: 1
     title: New_CompareNode
-    position: {x: 393, y: 213}
+    position: {x: 602, y: 227}
     stateSo: {fileID: 11400000, guid: 20c79d46e2559a2478c2db3943d24b79, type: 2}
   - id: 97cd9034-3a92-4ffd-b6b4-0599907bceb5
     nodeType: 2
     title: New_Node
-    position: {x: 542, y: 468}
+    position: {x: 643, y: 635}
     stateSo: {fileID: 11400000, guid: fd3c67d9c93266c469967d531de48839, type: 2}
   - id: 56961bf2-72a5-4c9c-92a3-6108c4e43493
     nodeType: 2
     title: New_Node
-    position: {x: 601.4501, y: 212.75002}
+    position: {x: 736, y: 32}
     stateSo: {fileID: 11400000, guid: 96ff5b6a51a7f9643935a8dce64397a2, type: 2}
+  - id: 43737a5e-26af-4bc7-bdaa-023a06e21adf
+    nodeType: 3
+    title: New_MonitorNode
+    position: {x: 204, y: 173}
+    stateSo: {fileID: 0}
+  - id: 3cb6a339-ebad-40d4-b494-a47b614d1ff2
+    nodeType: 1
+    title: New_CompareNode
+    position: {x: 420.90002, y: -19.55}
+    stateSo: {fileID: 0}
+  - id: ed0986cf-348c-4996-87c8-ae9fc31529a3
+    nodeType: 2
+    title: New_Node
+    position: {x: 190, y: -77}
+    stateSo: {fileID: 0}
+  - id: 505e2f37-7b98-4cbb-bb2d-160bb37c2bb3
+    nodeType: 2
+    title: New_Node
+    position: {x: 393, y: 173}
+    stateSo: {fileID: 0}
   edges:
   - id: 
     outputNodeId: 1690a348-dea1-4402-8ab2-e805700395fe
@@ -67,6 +87,24 @@ MonoBehaviour:
     outPortName: Out
   - id: 
     outputNodeId: 56961bf2-72a5-4c9c-92a3-6108c4e43493
+    inputNodeId: 1690a348-dea1-4402-8ab2-e805700395fe
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: entryNode
+    inputNodeId: 1690a348-dea1-4402-8ab2-e805700395fe
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: 43737a5e-26af-4bc7-bdaa-023a06e21adf
+    inputNodeId: 505e2f37-7b98-4cbb-bb2d-160bb37c2bb3
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: 505e2f37-7b98-4cbb-bb2d-160bb37c2bb3
     inputNodeId: 1690a348-dea1-4402-8ab2-e805700395fe
     outputPortType: 1
     inputPortType: 0
