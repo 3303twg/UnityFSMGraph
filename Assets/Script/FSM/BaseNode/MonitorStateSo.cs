@@ -9,5 +9,4 @@ public class MonitorStateSo : BaseStateSo<MonitorState>
     public CompareOperatorType compareOperator;
     public BlackboardKey leftKey;
     public float rightKey;
-    public string nodeId;
 }
