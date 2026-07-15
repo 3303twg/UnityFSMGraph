@@ -63,6 +63,8 @@ public partial class EnemyController : MonoBehaviour
 
     private void Update()
     {
+        if (BossDeathSupernova.IsPlaying) return;
+
         SyncCombatBlackboard();
         stateMachine?.Update();
         foreach (var monitor in graphRuntime.monitorList)
@@ -79,6 +81,8 @@ public partial class EnemyController : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
+        if (BossDeathSupernova.IsPlaying || enemyStat.hp <= 0f) return;
+
         enemyStat.hp = Mathf.Max(0f, enemyStat.hp - amount);
         blackboard[BlackboardKey.CurHp] = enemyStat.hp;
         var sr = GetComponent<SpriteRenderer>();
@@ -86,12 +90,27 @@ public partial class EnemyController : MonoBehaviour
         BossVfx.SpawnSparkBurst(transform.position, new Color(1f, 0.5f, 0.2f), 6, 4.5f);
         BossCombatHud.Instance?.Shake(0.18f);
         Debug.Log($"[Boss] HP {enemyStat.hp}/{enemyStat.maxHp}");
+
+        if (enemyStat.hp <= 0f)
+            BossDeathSupernova.Play(this);
+    }
+
+    [ContextMenu("Force Supernova Death")]
+    public void ForceSupernovaDeath()
+    {
+        enemyStat.hp = 0f;
+        blackboard[BlackboardKey.CurHp] = 0f;
+        BossDeathSupernova.Play(this);
     }
 
     void LateUpdate()
     {
+        if (BossDeathSupernova.IsPlaying) return;
         // 테스트: F로 보스에 데미지 → 페이즈 전환 확인
         if (Input.GetKeyDown(KeyCode.F))
             TakeDamage(25f);
+        // 테스트: K로 즉시 초신성
+        if (Input.GetKeyDown(KeyCode.K))
+            ForceSupernovaDeath();
     }
 }

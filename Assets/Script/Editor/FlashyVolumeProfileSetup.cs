@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -7,33 +8,26 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Main Camera Profile — 네온이되 눈 안 아픈 톤.
+/// Main Camera Profile 세팅.
+/// VolumeComponent는 반드시 AddObjectToAsset으로 심어야 fileID:0 NRE가 안 난다.
 /// </summary>
 public static class FlashyVolumeProfileSetup
 {
     const string ProfilePath = "Assets/Scenes/SampleScene/Main Camera Profile.asset";
-    const string TonePrefKey = "FSM_VolumeSoftTone_v2";
+    const string TonePrefKey = "FSM_VolumeSoftTone_v5";
 
     [MenuItem("Tools/FSM/Make Flashy Volume Profile")]
     public static void RunMenu()
     {
-        Apply(true);
-        EditorPrefs.SetInt(TonePrefKey, 2);
+        Selection.activeObject = null;
+        Rebuild(true);
     }
 
     [MenuItem("Tools/FSM/Repair Volume Profile")]
     public static void RepairMenu()
     {
-        var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(ProfilePath);
-        if (profile == null)
-        {
-            EditorUtility.DisplayDialog("Volume", $"프로필 없음:\n{ProfilePath}", "OK");
-            return;
-        }
-
-        RemoveBrokenComponents(profile);
-        Apply(true);
-        EditorPrefs.SetInt(TonePrefKey, 2);
+        Selection.activeObject = null;
+        Rebuild(true);
     }
 
     [InitializeOnLoadMethod]
@@ -45,51 +39,20 @@ public static class FlashyVolumeProfileSetup
             var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(ProfilePath);
             if (profile == null) return;
 
-            if (HasBrokenComponents(profile))
-            {
-                RemoveBrokenComponents(profile);
-                Apply(false);
-                EditorPrefs.SetInt(TonePrefKey, 2);
-                Debug.Log("[Volume] Repaired broken null components in Main Camera Profile.");
-                return;
-            }
-
+            bool broken = HasBrokenComponents(profile);
             bool empty = profile.components == null || profile.components.Count == 0;
-            if (!empty && EditorPrefs.GetInt(TonePrefKey, 0) >= 2) return;
-            Apply(false);
-            EditorPrefs.SetInt(TonePrefKey, 2);
+            bool needsTone = EditorPrefs.GetInt(TonePrefKey, 0) < 5;
+            if (!broken && !empty && !needsTone) return;
+
+            // 인스펙터가 깨진 프로필을 열어두면 CreateEditor NRE 반복 → 선택 해제
+            if (Selection.activeObject == profile)
+                Selection.activeObject = null;
+
+            Rebuild(false);
         };
     }
 
-    static bool HasBrokenComponents(VolumeProfile profile)
-    {
-        if (profile.components == null) return false;
-        foreach (var c in profile.components)
-        {
-            if (c == null) return true;
-        }
-        return false;
-    }
-
-    /// <summary>fileID:0 null 참조 제거 — 인스펙터 NRE 원인.</summary>
-    static void RemoveBrokenComponents(VolumeProfile profile)
-    {
-        var so = new SerializedObject(profile);
-        var list = so.FindProperty("components");
-        if (list == null || !list.isArray) return;
-
-        for (int i = list.arraySize - 1; i >= 0; i--)
-        {
-            if (list.GetArrayElementAtIndex(i).objectReferenceValue == null)
-                list.DeleteArrayElementAtIndex(i);
-        }
-
-        so.ApplyModifiedPropertiesWithoutUndo();
-        EditorUtility.SetDirty(profile);
-        AssetDatabase.SaveAssets();
-    }
-
-    static void Apply(bool dialog)
+    static void Rebuild(bool dialog)
     {
         var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(ProfilePath);
         if (profile == null)
@@ -99,110 +62,173 @@ public static class FlashyVolumeProfileSetup
             return;
         }
 
-        RemoveBrokenComponents(profile);
-        // --- Bloom: 은은하게 ---
-        var bloom = GetOrAdd<Bloom>(profile);
+        ClearAllComponents(profile);
+
+        // Bloom ~6.5, 살짝 뿌연 정도
+        var bloom = AddEmbedded<Bloom>(profile);
         bloom.active = true;
-        bloom.threshold.Override(0.85f);
-        bloom.intensity.Override(1.35f);
-        bloom.scatter.Override(0.55f);
-        bloom.clamp.Override(12f);
-        bloom.tint.Override(new Color(1f, 0.75f, 0.95f));
+        bloom.threshold.Override(0.6f);
+        bloom.intensity.Override(6.5f);
+        bloom.scatter.Override(0.72f);
+        bloom.clamp.Override(18f);
+        bloom.tint.Override(new Color(1f, 0.85f, 1f));
         bloom.highQualityFiltering.Override(true);
 
-        // --- Chromatic Aberration ---
-        var chroma = GetOrAdd<ChromaticAberration>(profile);
+        var chroma = AddEmbedded<ChromaticAberration>(profile);
         chroma.active = true;
-        chroma.intensity.Override(0.12f);
+        chroma.intensity.Override(0.1f);
 
-        // --- Vignette ---
-        var vig = GetOrAdd<Vignette>(profile);
+        var vig = AddEmbedded<Vignette>(profile);
         vig.active = true;
         vig.color.Override(new Color(0.02f, 0f, 0.05f));
         vig.intensity.Override(0.28f);
         vig.smoothness.Override(0.45f);
         vig.rounded.Override(true);
 
-        // --- Color Adjustments ---
-        var color = GetOrAdd<ColorAdjustments>(profile);
+        var color = AddEmbedded<ColorAdjustments>(profile);
         color.active = true;
-        color.postExposure.Override(0.05f);
-        color.contrast.Override(12f);
+        color.postExposure.Override(0.02f);
+        color.contrast.Override(10f);
         color.colorFilter.Override(new Color(1f, 0.98f, 1.02f));
         color.hueShift.Override(0f);
-        color.saturation.Override(12f);
+        color.saturation.Override(10f);
 
-        // --- White Balance ---
-        var wb = GetOrAdd<WhiteBalance>(profile);
+        var wb = AddEmbedded<WhiteBalance>(profile);
         wb.active = true;
         wb.temperature.Override(-2f);
         wb.tint.Override(4f);
 
-        // --- Film Grain ---
-        var grain = GetOrAdd<FilmGrain>(profile);
+        var grain = AddEmbedded<FilmGrain>(profile);
         grain.active = true;
         grain.type.Override(FilmGrainLookup.Medium1);
-        grain.intensity.Override(0.12f);
+        grain.intensity.Override(0.1f);
         grain.response.Override(0.8f);
 
-        // --- Lens Distortion ---
-        var lens = GetOrAdd<LensDistortion>(profile);
+        var lens = AddEmbedded<LensDistortion>(profile);
         lens.active = true;
-        lens.intensity.Override(-0.06f);
+        lens.intensity.Override(-0.05f);
         lens.xMultiplier.Override(1f);
         lens.yMultiplier.Override(1f);
         lens.scale.Override(1.01f);
 
-        // --- Tonemapping ---
-        var tone = GetOrAdd<Tonemapping>(profile);
+        var tone = AddEmbedded<Tonemapping>(profile);
         tone.active = true;
         tone.mode.Override(TonemappingMode.ACES);
 
-        // --- Lift Gamma Gain: 거의 중립 ---
-        var lgg = GetOrAdd<LiftGammaGain>(profile);
+        var lgg = AddEmbedded<LiftGammaGain>(profile);
         lgg.active = true;
         lgg.lift.Override(new Vector4(1f, 1f, 1f, -0.02f));
         lgg.gamma.Override(new Vector4(1f, 1f, 1f, 0f));
         lgg.gain.Override(new Vector4(1.02f, 1f, 1.04f, 0.02f));
 
-        // --- Shadows Midtones Highlights ---
-        var smh = GetOrAdd<ShadowsMidtonesHighlights>(profile);
+        var smh = AddEmbedded<ShadowsMidtonesHighlights>(profile);
         smh.active = true;
         smh.shadows.Override(new Vector4(1f, 1f, 1.02f, -0.05f));
         smh.midtones.Override(new Vector4(1f, 1f, 1.02f, 0f));
         smh.highlights.Override(new Vector4(1.05f, 1.02f, 1.08f, 0.05f));
 
-        // --- Motion Blur ---
-        var motion = GetOrAdd<MotionBlur>(profile);
+        var motion = AddEmbedded<MotionBlur>(profile);
         motion.active = true;
         motion.quality.Override(MotionBlurQuality.Medium);
-        motion.intensity.Override(0.15f);
+        motion.intensity.Override(0.12f);
         motion.clamp.Override(0.05f);
 
         EditorUtility.SetDirty(profile);
         AssetDatabase.SaveAssets();
+        AssetDatabase.ImportAsset(ProfilePath, ImportAssetOptions.ForceUpdate);
+
+        // 저장 후에도 null이면 실패
+        profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(ProfilePath);
+        if (HasBrokenComponents(profile))
+        {
+            Debug.LogError("[Volume] Rebuild failed — components still null. Do not select the profile until fixed.");
+            if (dialog)
+                EditorUtility.DisplayDialog("Volume", "프로필 복구 실패. Console 확인.", "OK");
+            return;
+        }
 
         EnsureRendererPostProcess();
         EnsureSceneCameraVolume(profile);
+        EditorPrefs.SetInt(TonePrefKey, 5);
 
         if (dialog)
         {
             EditorUtility.DisplayDialog(
                 "Volume Profile",
-                "소프트 네온 톤으로 낮춰 적용했습니다.\nBloom/노출/채도 완화.",
+                "복구 완료.\nBloom Intensity 6.5 (뿌연 느낌 살짝 완화).",
                 "OK");
         }
         else
         {
-            Debug.Log("[Volume] Soft neon Main Camera Profile applied.");
+            Debug.Log("[Volume] Profile rebuilt with embedded components. Bloom 6.5");
         }
     }
 
-    static T GetOrAdd<T>(VolumeProfile profile) where T : VolumeComponent
+    static T AddEmbedded<T>(VolumeProfile profile) where T : VolumeComponent
     {
-        if (!profile.TryGet(out T comp))
-            comp = profile.Add<T>(true);
+        // 이미 정상 객체가 있으면 재사용
+        if (profile.TryGet(out T existing) && existing != null)
+            return existing;
+
+        var comp = ScriptableObject.CreateInstance<T>();
+        comp.hideFlags = HideFlags.HideInInspector | HideFlags.HideInHierarchy;
+        comp.name = typeof(T).Name;
+        comp.SetAllOverridesTo(true);
+
+        AssetDatabase.AddObjectToAsset(comp, profile);
+        profile.components.Add(comp);
         return comp;
+    }
+
+    static bool HasBrokenComponents(VolumeProfile profile)
+    {
+        if (profile == null) return true;
+        if (profile.components == null) return false;
+
+        var so = new SerializedObject(profile);
+        var list = so.FindProperty("components");
+        if (list != null && list.isArray)
+        {
+            for (int i = 0; i < list.arraySize; i++)
+            {
+                if (list.GetArrayElementAtIndex(i).objectReferenceValue == null)
+                    return true;
+            }
+        }
+
+        foreach (var c in profile.components)
+        {
+            if (c == null) return true;
+        }
+        return false;
+    }
+
+    static void ClearAllComponents(VolumeProfile profile)
+    {
+        // 런타임 리스트
+        if (profile.components != null)
+            profile.components.Clear();
+
+        // 시리얼라이즈 배열
+        var so = new SerializedObject(profile);
+        var list = so.FindProperty("components");
+        if (list != null && list.isArray)
+        {
+            list.ClearArray();
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // 서브에셋 전부 제거
+        var path = AssetDatabase.GetAssetPath(profile);
+        foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
+        {
+            if (asset == null || asset == profile) continue;
+            if (asset is VolumeComponent)
+                Object.DestroyImmediate(asset, true);
+        }
+
+        EditorUtility.SetDirty(profile);
+        AssetDatabase.SaveAssets();
     }
 
     static void EnsureRendererPostProcess()
@@ -229,7 +255,6 @@ public static class FlashyVolumeProfileSetup
             }
         }
 
-        // Bloom이 HDR에서 잘 먹도록
         var pipeGuids = AssetDatabase.FindAssets("t:UniversalRenderPipelineAsset");
         foreach (var guid in pipeGuids)
         {

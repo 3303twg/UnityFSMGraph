@@ -384,6 +384,11 @@ public static class BossTestSetup
         if (oldGround != null)
             Object.DestroyImmediate(oldGround);
 
+        // 예전 테스트 적 — HUD가 Find 잘못 잡는 원인
+        var oldTestEnemy = GameObject.Find("TestEnemy");
+        if (oldTestEnemy != null)
+            oldTestEnemy.SetActive(false);
+
         var playerGo = EnsureActor2D("Player", new Vector3(0f, 0f, 0f), new Color(0.45f, 1.35f, 1.9f), 1f);
         if (playerGo.GetComponent<PlayerController>() == null)
             playerGo.AddComponent<PlayerController>();
@@ -426,6 +431,10 @@ public static class BossTestSetup
         {
             hudGo.AddComponent<BossCombatHud>();
         }
+
+        var hud = hudGo.GetComponent<BossCombatHud>();
+        if (hud != null)
+            hud.SetBoss(enemy);
 
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
         Selection.activeGameObject = bossGo;
