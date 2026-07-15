@@ -33,4 +33,7 @@ public enum BlackboardKey
 {
     CurHp,
     DetectionDistance,
+    DistToPlayer,
+    BossPhase,
+    HpRatio,
 }

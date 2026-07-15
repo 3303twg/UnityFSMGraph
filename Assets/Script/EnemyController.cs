@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-public class EnemyController : MonoBehaviour
+public partial class EnemyController : MonoBehaviour
 {
     public FSMGraphSo graphSo;
 
@@ -36,6 +35,12 @@ public class EnemyController : MonoBehaviour
     void InitBlackboard()
     {
         blackboard[BlackboardKey.CurHp] = enemyStat.hp;
+        blackboard[BlackboardKey.DetectionDistance] = enemyStat.detectionDistance;
+        blackboard[BlackboardKey.DistToPlayer] = 0f;
+        blackboard[BlackboardKey.BossPhase] = 1f;
+        blackboard[BlackboardKey.HpRatio] = 100f;
+        MoveSpeedMul = 1f;
+        DamageMul = 1f;
     }
 
     public object GetBlackboardValue(BlackboardKey key)
@@ -58,8 +63,9 @@ public class EnemyController : MonoBehaviour
 
     private void Update()
     {
+        SyncCombatBlackboard();
         stateMachine?.Update();
-        foreach(var monitor in graphRuntime.monitorList)
+        foreach (var monitor in graphRuntime.monitorList)
         {
             monitor?.Update();
         }
@@ -68,7 +74,24 @@ public class EnemyController : MonoBehaviour
     [ContextMenu("TakeDamage")]
     public void TakeDamage()
     {
-        enemyStat.hp -= 1f;
+        TakeDamage(20f);
+    }
+
+    public void TakeDamage(float amount)
+    {
+        enemyStat.hp = Mathf.Max(0f, enemyStat.hp - amount);
         blackboard[BlackboardKey.CurHp] = enemyStat.hp;
+        var sr = GetComponent<SpriteRenderer>();
+        BossVfx.HitFlash(sr, Color.white);
+        BossVfx.SpawnSparkBurst(transform.position, new Color(1f, 0.5f, 0.2f), 6, 4.5f);
+        BossCombatHud.Instance?.Shake(0.18f);
+        Debug.Log($"[Boss] HP {enemyStat.hp}/{enemyStat.maxHp}");
+    }
+
+    void LateUpdate()
+    {
+        // 테스트: F로 보스에 데미지 → 페이즈 전환 확인
+        if (Input.GetKeyDown(KeyCode.F))
+            TakeDamage(25f);
     }
 }

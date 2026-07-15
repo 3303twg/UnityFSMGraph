@@ -54,7 +54,7 @@ MonoBehaviour:
   - id: eaf411b3-1467-498e-b9ec-68be0d329fe2
     nodeType: 3
     title: New_MonitorNode
-    position: {x: -56, y: 32}
+    position: {x: -11, y: 35}
     stateSo: {fileID: 11400000, guid: a736817fd3f03c246af200843455ca43, type: 2}
     referenceTargetId: 
   - id: 978412a3-3ed1-496c-a850-4ffb3d63d690

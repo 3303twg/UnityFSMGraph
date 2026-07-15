@@ -141,11 +141,6 @@ public class NodeView : Node
             AddPort(PortType.Output, Direction.Output, Port.Capacity.Single, "Out", outputContainer);
             return;
         }
-        else if(data.nodeType == NodeType.Reference)
-        {
-            AddPort(PortType.Input, Direction.Input, Port.Capacity.Multi, "In", inputContainer);
-            return;
-        }
 
         else if(data.nodeType == NodeType.Action)
         {
