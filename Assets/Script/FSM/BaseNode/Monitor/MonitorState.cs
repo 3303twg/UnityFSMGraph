@@ -35,7 +35,6 @@ public class MonitorState : BaseState, IFSMMonitor
         {
             if (!hit)
             {
-                Debug.Log("재장전");
                 isUsed = false;
             }
             return;
@@ -43,7 +42,6 @@ public class MonitorState : BaseState, IFSMMonitor
 
         if (hit)
         {
-            Debug.Log("충족");
             isUsed = true;
             enemyController.Navigator.GoToPortFrom(nodeId, PortType.Output);
 

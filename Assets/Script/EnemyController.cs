@@ -54,13 +54,6 @@ public class EnemyController : MonoBehaviour
         stateMachine = new StateMachine();
         graphRuntime = new FSMGraphRuntime(graphSo, this, stateMachine);
         graphRuntime.Init();
-        foreach (var monitor in graphRuntime.monitorList)
-        {
-            if (monitor is IFSMMonitor fsmMonitor)
-            {
-                fsmMonitor.Init();
-            }
-        }
     }
 
     private void Update()

@@ -101,6 +101,14 @@ public class NodeView : Node
             titleContainer.style.backgroundColor = color;
             mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
         }
+
+        else if (data.nodeType == NodeType.Reference)
+        {
+            color = new Color32(30, 90, 125, 255);
+
+            titleContainer.style.backgroundColor = color;
+            mainContainer.style.backgroundColor = new Color(0.16f, 0.16f, 0.18f); // 짙은 회색, 살짝 푸른기 (노드 본체)
+        }
         else
         {
             // 이건 이제 FSM노드마다 바꾸면 되겠고
@@ -133,6 +141,11 @@ public class NodeView : Node
             AddPort(PortType.Output, Direction.Output, Port.Capacity.Single, "Out", outputContainer);
             return;
         }
+        else if(data.nodeType == NodeType.Reference)
+        {
+            AddPort(PortType.Input, Direction.Input, Port.Capacity.Multi, "In", inputContainer);
+            return;
+        }
 
         else if(data.nodeType == NodeType.Action)
         {
@@ -142,7 +155,7 @@ public class NodeView : Node
 
         else if(data.nodeType == NodeType.Reference)
         {
-            AddPort(PortType.Output, Direction.Output, Port.Capacity.Single, "Out", outputContainer);
+            AddPort(PortType.Input, Direction.Input, Port.Capacity.Single, "Input", inputContainer);
         }
 
         RefreshExpandedState();

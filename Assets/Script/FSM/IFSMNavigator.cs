@@ -1,14 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public interface IFSMNavigator
 {
     string CurrentNodeId { get; }
-    //void GotoNode(string nodeId);
+    void GoToNode(string nodeId);
     void GoToNextNode();
     void GoToTrueNode();
     void GoToFalseNode();
-
     void GoToPortFrom(string nodeId, PortType portType);
 }

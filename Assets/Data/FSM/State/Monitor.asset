@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   compareOperator: 0
   leftKey: 0
-  rightKey: 0
+  rightKey: 8

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.Search;
 using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -235,6 +236,41 @@ public class TestGraphView : GraphView
             nodeViewsById[entry.id] = nodeView;
     }
 
+    public void CreateReferenceNode(Vector2 pos, Vector2? screenMousePos = null)
+    {
+        var entry = new NodeData
+        {
+            title = "New_Node",
+            nodeType = NodeType.Reference,
+            position = pos
+        };
+        GraphElement node = new NodeView(entry, graphSo);
+        graphSo.nodes.Add(entry);
+        AddElement(node);
+
+        if (node is NodeView nodeView)
+            nodeViewsById[entry.id] = nodeView;
+
+        var provider = ScriptableObject.CreateInstance<NodeSearcProvider>();
+        provider.Init(graphSo, entry.id, target =>
+        {
+            entry.referenceTargetId = target.id;
+            entry.title = "Ref => " + target.title;
+            
+            if(nodeViewsById.TryGetValue(entry.id, out nodeView))
+            {
+                nodeView.SyncTitle();
+            }
+            EditorUtility.SetDirty(graphSo);
+        });
+        //흠 일단 패스 문제생기면 고치자고
+        //var openPos = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+        Vector2 openPos = screenMousePos
+        ?? GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+
+        SearchWindow.Open(new SearchWindowContext(openPos), provider);
+    }
+
     public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
     {
         base.BuildContextualMenu(evt);
@@ -256,6 +292,15 @@ public class TestGraphView : GraphView
             var pos = contentViewContainer.WorldToLocal(action.eventInfo.localMousePosition);
             CreateMonitorNode(pos);
         });
+        evt.menu.AppendAction("Add Node/Reference", action =>
+        {
+            var pos = contentViewContainer.WorldToLocal(action.eventInfo.localMousePosition);
+            var screenPos = GUIUtility.GUIToScreenPoint(action.eventInfo.mousePosition);
+            CreateReferenceNode(pos, screenPos);
+
+            
+        });
+        
     }
 
     //부모 메서드 오버라이드 (포트 연결 관련)

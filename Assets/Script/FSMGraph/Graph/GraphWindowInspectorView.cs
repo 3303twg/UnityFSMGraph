@@ -1,9 +1,13 @@
 using System;
 using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
+using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class GraphWindowInspectorView : VisualElement
 {
@@ -95,6 +99,35 @@ public class GraphWindowInspectorView : VisualElement
             return;
         }
 
+        if (node.nodeType == NodeType.Reference)
+        {
+            //root.Add(new Label("엔트리 노드"));
+
+            root.Add(new UnityEngine.UIElements.Button(() =>
+                {
+                    var provider = ScriptableObject.CreateInstance<NodeSearcProvider>();
+                    provider.Init(graphDataSo, node.id, target =>
+                    {
+                        node.referenceTargetId = target.id;
+                        node.title = "Ref => " + target.title;
+                        MarkDirty();
+                        //EditorUtility.SetDirty(graphDataSo);
+                        RebuildNodeInspector();
+                    });
+
+                    Vector2 screenPos = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+
+                    SearchWindow.Open(new SearchWindowContext(screenPos), provider);
+
+                })
+            {
+                text = "Select Target"
+            });
+
+            
+            return;
+        }
+
         ObjectField objectField = new ObjectField("StateSo")
         {
             objectType = typeof(BaseStateSoAsset),
@@ -157,7 +190,7 @@ public class GraphWindowInspectorView : VisualElement
         runtimeStateInspector = propertyField;
         root.Add(MakeSection("Runtime State (플레이 중만 반영)", propertyField));
 
-        var reEvaluateButton = new Button(() =>
+        var reEvaluateButton = new UnityEngine.UIElements.Button(() =>
         {
             if (runtimeState is CompareState compareState)
             {

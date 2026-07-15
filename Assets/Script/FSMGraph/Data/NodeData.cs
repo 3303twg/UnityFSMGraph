@@ -12,4 +12,5 @@ public class NodeData
     public string title = "State";
     public Vector2 position;
     public BaseStateSoAsset stateSo;
+    public string referenceTargetId;
 }
