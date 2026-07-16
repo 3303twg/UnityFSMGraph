@@ -53,7 +53,7 @@ public partial class EnemyController
         FaceDirection(dir);
     }
 
-    /// <summary>플레이어 주위를 돌며 서서히 접근.</summary>
+    /// <summary>플레이어 주위를 돌며 접근. orbitSpeed 부호로 방향.</summary>
     public void StalkPlayer(float orbitSpeed, float approachSpeed, float preferDistance)
     {
         if (PlayerTransform == null) return;
@@ -65,11 +65,18 @@ public partial class EnemyController
         Vector3 radial = to / dist;
         Vector3 tangent = new Vector3(-radial.y, radial.x, 0f);
 
-        Vector3 move = tangent * orbitSpeed;
+        float orbitAbs = Mathf.Abs(orbitSpeed);
+        float sign = orbitSpeed >= 0f ? 1f : -1f;
+        // 약간의 사인 웨이브로 궤도 반경을 출렁이게
+        float wobble = Mathf.Sin(Time.time * 5.5f) * approachSpeed * 0.35f;
+
+        Vector3 move = tangent * (orbitAbs * sign);
         if (dist > preferDistance)
-            move += radial * approachSpeed;
-        else if (dist < preferDistance * 0.75f)
-            move -= radial * approachSpeed;
+            move += radial * (approachSpeed + wobble);
+        else if (dist < preferDistance * 0.7f)
+            move -= radial * (approachSpeed + Mathf.Abs(wobble));
+        else
+            move += radial * wobble * 0.5f;
 
         transform.position += move * MoveSpeedMul * Time.deltaTime;
         FaceDirection(radial);

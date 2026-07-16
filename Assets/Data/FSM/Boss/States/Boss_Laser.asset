@@ -12,10 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30ccf1c35e9b64c48b1e9cdc719714cc, type: 3}
   m_Name: Boss_Laser
   m_EditorClassIdentifier: 
-  windup: 0.7
-  sweepDuration: 0.9
-  recover: 0.35
-  damage: 20
-  beamLength: 12
-  beamWidth: 0.7
-  sweepAngle: 110
+  previewDuration: 0.55
+  holdDuration: 0.32
+  strikeDuration: 0.2
+  recover: 0.28
+  damage: 22
+  beamLength: 13
+  beamWidth: 0.9
+  sweepAngle: 125
+  strikeCount: 1

@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 69dbbfe5378da70448dc24df9ad29aaf, type: 3}
-  m_Name: Boss_Barrage_P3
+  m_Name: Boss_Barrage_P3_Cross
   m_EditorClassIdentifier: 
-  pattern: 6
-  shotCount: 14
-  windup: 0.28
-  interval: 0.08
-  recover: 0.28
+  pattern: 4
+  shotCount: 12
+  windup: 0.25
+  interval: 0.09
+  recover: 0.25
   damage: 6
-  projectileSpeed: 18
-  spreadAngle: 50
-  ringCount: 16
-  waveCount: 5
-  strafeSpeed: 6.2
+  projectileSpeed: 17.5
+  spreadAngle: 42
+  ringCount: 12
+  waveCount: 4
+  strafeSpeed: 5.5

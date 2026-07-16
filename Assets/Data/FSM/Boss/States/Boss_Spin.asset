@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d43a6b46e83406a4d967cb7444b5c8ca, type: 3}
   m_Name: Boss_Spin
   m_EditorClassIdentifier: 
-  duration: 1.4
-  moveSpeed: 5.5
-  spinSpeed: 720
-  tickInterval: 0.2
+  duration: 1.35
+  moveSpeed: 7.2
+  spinSpeed: 820
+  tickInterval: 0.16
   damage: 4
-  hitRadius: 2.8
+  hitRadius: 2.9

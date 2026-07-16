@@ -36,25 +36,25 @@ MonoBehaviour:
   - id: boss_cmp_p3
     nodeType: 1
     title: Phase>=3?
-    position: {x: 720, y: 240}
+    position: {x: 625, y: 539}
     stateSo: {fileID: 11400000, guid: 02adc8718b60bac4aba4ad614d6d04d6, type: 2}
     referenceTargetId: 
   - id: boss_cmp_p2
     nodeType: 1
     title: Phase>=2?
-    position: {x: 720, y: 420}
+    position: {x: 773, y: 287}
     stateSo: {fileID: 11400000, guid: 8be21826538616241871ce20a58b18e8, type: 2}
     referenceTargetId: 
   - id: boss_p1_melee
     nodeType: 1
     title: P1 Dist<=Melee
-    position: {x: 980, y: 40}
+    position: {x: 1014, y: 27}
     stateSo: {fileID: 11400000, guid: 0ebad14c452aeee489fc49279acac885, type: 2}
     referenceTargetId: 
   - id: boss_p1_mid
     nodeType: 1
     title: P1 Dist<=Mid
-    position: {x: 980, y: 160}
+    position: {x: 1032, y: 193}
     stateSo: {fileID: 11400000, guid: 6ee200fcebd6c5a439d622eb794a1526, type: 2}
     referenceTargetId: 
   - id: boss_combo
@@ -73,6 +73,12 @@ MonoBehaviour:
     nodeType: 2
     title: ZigZagCharge
     position: {x: 1240, y: 180}
+    stateSo: {fileID: 11400000, guid: 559aedbe2bae45c489cf87ef9ad6d24d, type: 2}
+    referenceTargetId: 
+  - id: boss_charge_zig2
+    nodeType: 2
+    title: ZigZag(P2)
+    position: {x: 1782, y: 460}
     stateSo: {fileID: 11400000, guid: 559aedbe2bae45c489cf87ef9ad6d24d, type: 2}
     referenceTargetId: 
   - id: boss_barrage
@@ -95,32 +101,38 @@ MonoBehaviour:
     referenceTargetId: 
   - id: boss_p2_melee
     nodeType: 1
-    title: P2 Dist<=Melee
-    position: {x: 980, y: 360}
+    title: 
+    position: {x: 1012, y: 337}
     stateSo: {fileID: 11400000, guid: 55edb8ba9c5303b4bb5d23a1374dae45, type: 2}
     referenceTargetId: 
   - id: boss_p2_mid
     nodeType: 1
     title: P2 Dist<=Mid
-    position: {x: 980, y: 500}
+    position: {x: 1001, y: 498}
     stateSo: {fileID: 11400000, guid: 8a04755ba709cd24d8ca0a809d316d5a, type: 2}
     referenceTargetId: 
   - id: boss_slam
     nodeType: 2
     title: Slam
-    position: {x: 1240, y: 320}
+    position: {x: 1189, y: 350}
     stateSo: {fileID: 11400000, guid: d4b439d8b188525449b68d95ed3e568d, type: 2}
+    referenceTargetId: 
+  - id: boss_charge_feint
+    nodeType: 2
+    title: FeintCharge
+    position: {x: 1351, y: 350}
+    stateSo: {fileID: 11400000, guid: f64789012345a6b7c8d9e0f1a2b3043d, type: 2}
     referenceTargetId: 
   - id: boss_heavy
     nodeType: 2
     title: HeavySlash
-    position: {x: 1500, y: 300}
+    position: {x: 1500, y: 350}
     stateSo: {fileID: 11400000, guid: 6e639fed87074954e9da2782d1cbf3fd, type: 2}
     referenceTargetId: 
   - id: boss_spin
     nodeType: 2
     title: SpinRush
-    position: {x: 1760, y: 300}
+    position: {x: 1655, y: 350}
     stateSo: {fileID: 11400000, guid: f3b8cf8c42a5f004e82df30b202825c2, type: 2}
     referenceTargetId: 
   - id: boss_laser
@@ -138,7 +150,7 @@ MonoBehaviour:
   - id: boss_blink
     nodeType: 2
     title: BlinkStrike
-    position: {x: 1240, y: 580}
+    position: {x: 1272, y: 580}
     stateSo: {fileID: 11400000, guid: 7ca601f96ab762c4d8b9b52c53d0cb03, type: 2}
     referenceTargetId: 
   - id: boss_nova
@@ -147,10 +159,16 @@ MonoBehaviour:
     position: {x: 1500, y: 580}
     stateSo: {fileID: 11400000, guid: c763fa0ca164c36428ae9bc2986c0b7d, type: 2}
     referenceTargetId: 
+  - id: boss_charge_curve
+    nodeType: 2
+    title: CurveCharge
+    position: {x: 1745, y: 565}
+    stateSo: {fileID: 11400000, guid: 07890123456a7b8c9d0e1f2a3b4054e0, type: 2}
+    referenceTargetId: 
   - id: boss_recover2
     nodeType: 2
     title: Recover(P2)
-    position: {x: 1760, y: 460}
+    position: {x: 1936, y: 337}
     stateSo: {fileID: 11400000, guid: 44935d8455b028341a2a68b5bd9e8bbe, type: 2}
     referenceTargetId: 
   - id: boss_p3_close
@@ -159,52 +177,106 @@ MonoBehaviour:
     position: {x: 980, y: 720}
     stateSo: {fileID: 11400000, guid: a01b5be38979d064bbb9568b3ef661dd, type: 2}
     referenceTargetId: 
+  - id: boss_p3_mid
+    nodeType: 1
+    title: P3 Dist<=Mid
+    position: {x: 980, y: 860}
+    stateSo: {fileID: 11400000, guid: 8a04755ba709cd24d8ca0a809d316d5a, type: 2}
+    referenceTargetId: 
   - id: boss_meteor
     nodeType: 2
     title: MeteorRain
-    position: {x: 1240, y: 680}
+    position: {x: 1248, y: 699}
     stateSo: {fileID: 11400000, guid: 7623462bb2e75f34db664ad17b8a90bc, type: 2}
+    referenceTargetId: 
+  - id: boss_barrage3
+    nodeType: 2
+    title: StormBarrage
+    position: {x: 1500, y: 684}
+    stateSo: {fileID: 11400000, guid: 8c005a6765263964c988333641642b2b, type: 2}
     referenceTargetId: 
   - id: boss_blink3
     nodeType: 2
     title: Blink(P3)
-    position: {x: 1500, y: 660}
+    position: {x: 1762, y: 684}
     stateSo: {fileID: 11400000, guid: 7ca601f96ab762c4d8b9b52c53d0cb03, type: 2}
     referenceTargetId: 
   - id: boss_spin3
     nodeType: 2
     title: Spin(P3)
-    position: {x: 1760, y: 660}
-    stateSo: {fileID: 11400000, guid: f3b8cf8c42a5f004e82df30b202825c2, type: 2}
-    referenceTargetId: 
-  - id: boss_laser3
-    nodeType: 2
-    title: Laser(P3)
-    position: {x: 1240, y: 840}
-    stateSo: {fileID: 11400000, guid: 493445976d0b02e4ca4e55aba2dc032e, type: 2}
-    referenceTargetId: 
-  - id: boss_barrage3
-    nodeType: 2
-    title: BloomBarrage
-    position: {x: 1500, y: 840}
-    stateSo: {fileID: 11400000, guid: 8c005a6765263964c988333641642b2b, type: 2}
-    referenceTargetId: 
-  - id: boss_nova3
-    nodeType: 2
-    title: Nova(P3)
-    position: {x: 1760, y: 840}
-    stateSo: {fileID: 11400000, guid: c763fa0ca164c36428ae9bc2986c0b7d, type: 2}
+    position: {x: 1981, y: 678}
+    stateSo: {fileID: 11400000, guid: e5f6478901234a5b6c7d8e9f0a1b032c, type: 2}
     referenceTargetId: 
   - id: boss_charge3
     nodeType: 2
     title: DoubleCharge
-    position: {x: 1760, y: 740}
+    position: {x: 2200, y: 620}
     stateSo: {fileID: 11400000, guid: 177195fc56d6f5a4ca55e66def60221b, type: 2}
+    referenceTargetId: 
+  - id: boss_homing3
+    nodeType: 2
+    title: Homing(P3)
+    position: {x: 1240, y: 820}
+    stateSo: {fileID: 11400000, guid: d4e5f647890123a4b5c6d7e8f90a021b, type: 2}
+    referenceTargetId: 
+  - id: boss_barrage3_spiral
+    nodeType: 2
+    title: SpiralBarrage
+    position: {x: 1500, y: 820}
+    stateSo: {fileID: 11400000, guid: a1b2c3d4e5f64789a0b1c2d3e4f50617, type: 2}
+    referenceTargetId: 
+  - id: boss_charge_zig3
+    nodeType: 2
+    title: ZigZag(P3)
+    position: {x: 1760, y: 820}
+    stateSo: {fileID: 11400000, guid: 559aedbe2bae45c489cf87ef9ad6d24d, type: 2}
+    referenceTargetId: 
+  - id: boss_barrage3_cross
+    nodeType: 2
+    title: CrossBarrage
+    position: {x: 1980, y: 820}
+    stateSo: {fileID: 11400000, guid: b2c3d4e5f6478901a2b3c4d5e6f70819, type: 2}
+    referenceTargetId: 
+  - id: boss_charge_curve3
+    nodeType: 2
+    title: Curve(P3)
+    position: {x: 2200, y: 820}
+    stateSo: {fileID: 11400000, guid: 07890123456a7b8c9d0e1f2a3b4054e0, type: 2}
+    referenceTargetId: 
+  - id: boss_laser3
+    nodeType: 2
+    title: Laser(P3)
+    position: {x: 1240, y: 980}
+    stateSo: {fileID: 11400000, guid: c3d4e5f64789012a3b4c5d6e7f80920a, type: 2}
+    referenceTargetId: 
+  - id: boss_barrage3_bloom
+    nodeType: 2
+    title: BloomBarrage
+    position: {x: 1500, y: 980}
+    stateSo: {fileID: 11400000, guid: c4d5e6f7081920a3b4c5d6e7f8091a2b, type: 2}
+    referenceTargetId: 
+  - id: boss_vacuum3
+    nodeType: 2
+    title: Vacuum(P3)
+    position: {x: 1760, y: 980}
+    stateSo: {fileID: 11400000, guid: 1e21632caa073f54c97992ed7b963460, type: 2}
+    referenceTargetId: 
+  - id: boss_charge3_far
+    nodeType: 2
+    title: FeintCharge(P3)
+    position: {x: 1980, y: 980}
+    stateSo: {fileID: 11400000, guid: f64789012345a6b7c8d9e0f1a2b3043d, type: 2}
+    referenceTargetId: 
+  - id: boss_nova3
+    nodeType: 2
+    title: Nova(P3)
+    position: {x: 2200, y: 980}
+    stateSo: {fileID: 11400000, guid: c763fa0ca164c36428ae9bc2986c0b7d, type: 2}
     referenceTargetId: 
   - id: boss_recover3
     nodeType: 2
     title: Recover(P3)
-    position: {x: 1760, y: 920}
+    position: {x: 2420, y: 820}
     stateSo: {fileID: 11400000, guid: 44935d8455b028341a2a68b5bd9e8bbe, type: 2}
     referenceTargetId: 
   - id: boss_vacuum
@@ -240,7 +312,7 @@ MonoBehaviour:
   - id: boss_ref_stalk
     nodeType: 4
     title: "Ref \u2192 Stalk"
-    position: {x: 1760, y: 240}
+    position: {x: 2129, y: 260}
     stateSo: {fileID: 0}
     referenceTargetId: boss_stalk
   edges:
@@ -300,7 +372,7 @@ MonoBehaviour:
     outPortName: False
   - id: 
     outputNodeId: boss_p1_mid
-    inputNodeId: boss_charge
+    inputNodeId: boss_charge_zig
     outputPortType: 2
     inputPortType: 0
     outPortName: True
@@ -312,12 +384,18 @@ MonoBehaviour:
     outPortName: False
   - id: 
     outputNodeId: boss_combo
-    inputNodeId: boss_recover
+    inputNodeId: boss_charge
     outputPortType: 1
     inputPortType: 0
     outPortName: Out
   - id: 
     outputNodeId: boss_charge
+    inputNodeId: boss_recover
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_charge_zig
     inputNodeId: boss_recover
     outputPortType: 1
     inputPortType: 0
@@ -366,6 +444,12 @@ MonoBehaviour:
     outPortName: False
   - id: 
     outputNodeId: boss_slam
+    inputNodeId: boss_charge_feint
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_charge_feint
     inputNodeId: boss_heavy
     outputPortType: 1
     inputPortType: 0
@@ -390,12 +474,12 @@ MonoBehaviour:
     outPortName: Out
   - id: 
     outputNodeId: boss_homing
-    inputNodeId: boss_charge_zig
+    inputNodeId: boss_charge_zig2
     outputPortType: 1
     inputPortType: 0
     outPortName: Out
   - id: 
-    outputNodeId: boss_charge_zig
+    outputNodeId: boss_charge_zig2
     inputNodeId: boss_recover2
     outputPortType: 1
     inputPortType: 0
@@ -408,6 +492,12 @@ MonoBehaviour:
     outPortName: Out
   - id: 
     outputNodeId: boss_nova
+    inputNodeId: boss_charge_curve
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_charge_curve
     inputNodeId: boss_recover2
     outputPortType: 1
     inputPortType: 0
@@ -426,12 +516,30 @@ MonoBehaviour:
     outPortName: True
   - id: 
     outputNodeId: boss_p3_close
+    inputNodeId: boss_p3_mid
+    outputPortType: 3
+    inputPortType: 0
+    outPortName: False
+  - id: 
+    outputNodeId: boss_p3_mid
+    inputNodeId: boss_homing3
+    outputPortType: 2
+    inputPortType: 0
+    outPortName: True
+  - id: 
+    outputNodeId: boss_p3_mid
     inputNodeId: boss_laser3
     outputPortType: 3
     inputPortType: 0
     outPortName: False
   - id: 
     outputNodeId: boss_meteor
+    inputNodeId: boss_barrage3
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_barrage3
     inputNodeId: boss_blink3
     outputPortType: 1
     inputPortType: 0
@@ -455,13 +563,55 @@ MonoBehaviour:
     inputPortType: 0
     outPortName: Out
   - id: 
-    outputNodeId: boss_laser3
-    inputNodeId: boss_barrage3
+    outputNodeId: boss_homing3
+    inputNodeId: boss_barrage3_spiral
     outputPortType: 1
     inputPortType: 0
     outPortName: Out
   - id: 
-    outputNodeId: boss_barrage3
+    outputNodeId: boss_barrage3_spiral
+    inputNodeId: boss_charge_zig3
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_charge_zig3
+    inputNodeId: boss_barrage3_cross
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_barrage3_cross
+    inputNodeId: boss_charge_curve3
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_charge_curve3
+    inputNodeId: boss_recover3
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_laser3
+    inputNodeId: boss_barrage3_bloom
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_barrage3_bloom
+    inputNodeId: boss_vacuum3
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_vacuum3
+    inputNodeId: boss_charge3_far
+    outputPortType: 1
+    inputPortType: 0
+    outPortName: Out
+  - id: 
+    outputNodeId: boss_charge3_far
     inputNodeId: boss_nova3
     outputPortType: 1
     inputPortType: 0

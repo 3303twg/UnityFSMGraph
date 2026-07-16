@@ -35,6 +35,13 @@ public class BossDeathSupernova : MonoBehaviour
         if (bossSr != null) originalColor = bossSr.color;
         originalScale = target.transform.localScale;
         IsPlaying = true;
+
+        // 연출 시작: 조작 잠금 + 카메라 보스 + 잔여 탄막 페이드
+        PlayerController.Instance?.SetControlEnabled(false);
+        CombatCamera.Instance?.SetBossFocus(true, target.transform);
+        BossVfx.ClearTelegraph(target.transform);
+        CombatFxCleanup.FadeCombatRemnants(0.65f);
+
         StopAllCoroutines();
         StartCoroutine(Sequence());
     }
@@ -45,6 +52,7 @@ public class BossDeathSupernova : MonoBehaviour
         center.z = 0f;
 
         BossCombatHud.Instance?.SetStateLabel("SUPERNOVA");
+        CombatCamera.Instance?.SetBossFocus(true, transform);
         CombatCamera.Instance?.ClearHoldZoom();
         CombatCamera.Instance?.HoldZoomOffset(-1.2f, gatherTime + collapseTime);
         CombatCamera.Instance?.Shake(0.25f, gatherTime * 0.9f, 22f);
@@ -175,7 +183,8 @@ public class BossDeathSupernova : MonoBehaviour
         }
 
         IsPlaying = false;
-        // 객체는 남기되 비활성 (씬에 잔해)
+        CombatCamera.Instance?.SetBossFocus(false);
+        PlayerController.Instance?.SetControlEnabled(true);
         gameObject.SetActive(false);
     }
 

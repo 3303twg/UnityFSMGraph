@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83920458233e8214cb9ab944aacf86de, type: 3}
   m_Name: Boss_Stalk
   m_EditorClassIdentifier: 
-  duration: 2
-  orbitSpeed: 3.4
-  approachSpeed: 2
-  preferDistance: 6.5
-  forceDecideDistance: 3
+  duration: 0.95
+  orbitSpeed: 6.2
+  approachSpeed: 4.2
+  preferDistance: 5.8
+  forceDecideDistance: 4.2

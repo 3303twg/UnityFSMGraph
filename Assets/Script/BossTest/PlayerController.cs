@@ -17,6 +17,9 @@ public class PlayerController : MonoBehaviour
     public float MaxHp => maxHp;
     public float Hp01 => maxHp > 0f ? Hp / maxHp : 0f;
     public Transform Transform => transform;
+    public bool ControlEnabled { get; private set; } = true;
+
+    public void SetControlEnabled(bool enabled) => ControlEnabled = enabled;
 
     void Awake()
     {
@@ -49,7 +52,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (Hp <= 0f) return;
+        if (!ControlEnabled || Hp <= 0f) return;
 
         Vector3 input = new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), 0f);
         if (input.sqrMagnitude > 0.01f)
@@ -114,6 +117,8 @@ public class PlayerController : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
+        if (!ControlEnabled || BossDeathSupernova.IsPlaying) return;
+
         Hp = Mathf.Max(0f, Hp - amount);
         BossCombatHud.Instance?.Shake(0.85f);
         var sr = GetComponent<SpriteRenderer>();

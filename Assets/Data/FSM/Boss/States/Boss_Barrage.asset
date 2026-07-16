@@ -22,3 +22,4 @@ MonoBehaviour:
   spreadAngle: 38
   ringCount: 12
   waveCount: 3
+  strafeSpeed: 3.2

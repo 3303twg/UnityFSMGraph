@@ -9,17 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69dbbfe5378da70448dc24df9ad29aaf, type: 3}
-  m_Name: Boss_Barrage_P3
+  m_Script: {fileID: 11500000, guid: 30ccf1c35e9b64c48b1e9cdc719714cc, type: 3}
+  m_Name: Boss_Laser_P3
   m_EditorClassIdentifier: 
-  pattern: 6
-  shotCount: 14
-  windup: 0.28
-  interval: 0.08
-  recover: 0.28
-  damage: 6
-  projectileSpeed: 18
-  spreadAngle: 50
-  ringCount: 16
-  waveCount: 5
-  strafeSpeed: 6.2
+  previewDuration: 0.42
+  holdDuration: 0.22
+  strikeDuration: 0.14
+  recover: 0.18
+  damage: 26
+  beamLength: 14
+  beamWidth: 1.1
+  sweepAngle: 155
+  strikeCount: 2

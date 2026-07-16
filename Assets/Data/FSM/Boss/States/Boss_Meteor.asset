@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b96f564839514164da111ed88052b0cc, type: 3}
   m_Name: Boss_Meteor
   m_EditorClassIdentifier: 
-  count: 8
-  windup: 0.5
-  interval: 0.14
-  recover: 0.45
+  count: 12
+  windup: 0.35
+  interval: 0.1
+  recover: 0.28
   damage: 7
-  fallSpeed: 12
+  fallSpeed: 14
   spawnHeight: 8

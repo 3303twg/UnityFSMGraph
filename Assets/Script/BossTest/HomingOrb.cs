@@ -45,6 +45,7 @@ public class HomingOrb : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        if (BossDeathSupernova.IsPlaying) return;
         var player = other.GetComponent<PlayerController>() ?? other.GetComponentInParent<PlayerController>();
         if (player == null) return;
         player.TakeDamage(damage);

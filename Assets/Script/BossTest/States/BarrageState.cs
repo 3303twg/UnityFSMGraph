@@ -15,6 +15,7 @@ public class BarrageState : BaseState
     public float spreadAngle;
     public int ringCount;
     public int waveCount;
+    public float strafeSpeed;
 
     BarragePattern active;
     float timer;
@@ -22,6 +23,7 @@ public class BarrageState : BaseState
     int wavesDone;
     bool started;
     float spiralAng;
+    float strafeSign;
     Color shotColor;
 
     public BarrageState(EnemyController c, StateMachine s, BarrageStateSo d) : base(c, s)
@@ -36,12 +38,13 @@ public class BarrageState : BaseState
         spreadAngle = d.spreadAngle;
         ringCount = Mathf.Max(6, d.ringCount);
         waveCount = Mathf.Max(1, d.waveCount);
+        strafeSpeed = d.strafeSpeed;
     }
 
     public override void Enter()
     {
         active = pattern == BarragePattern.Random
-            ? (BarragePattern)Random.Range(1, 6)
+            ? (BarragePattern)Random.Range(1, 7)
             : pattern;
 
         timer = 0f;
@@ -49,6 +52,7 @@ public class BarrageState : BaseState
         wavesDone = 0;
         started = false;
         spiralAng = Random.Range(0f, 360f);
+        strafeSign = Random.value > 0.5f ? 1f : -1f;
 
         string label = active switch
         {
@@ -56,6 +60,7 @@ public class BarrageState : BaseState
             BarragePattern.Spiral => "SPIRAL BARRAGE",
             BarragePattern.Cross => "CROSS BARRAGE",
             BarragePattern.Bloom => "BLOOM BARRAGE",
+            BarragePattern.Storm => "STORM BARRAGE",
             _ => "FAN BARRAGE"
         };
         BossCombatHud.Instance?.SetStateLabel(label);
@@ -67,6 +72,7 @@ public class BarrageState : BaseState
             BarragePattern.Spiral => new Color(2.2f, 1.2f, 0.3f),
             BarragePattern.Cross => new Color(2f, 0.3f, 0.55f),
             BarragePattern.Bloom => new Color(1.6f, 0.55f, 1.8f),
+            BarragePattern.Storm => new Color(2.4f, 0.35f, 0.9f),
             _ => new Color(2.4f, 0.7f, 0.15f)
         };
 
@@ -80,6 +86,7 @@ public class BarrageState : BaseState
     {
         timer += Time.deltaTime;
         enemyController.FacePlayer();
+        UpdateStrafe();
 
         if (!started)
         {
@@ -91,7 +98,6 @@ public class BarrageState : BaseState
         }
 
         int totalWaves = active == BarragePattern.Fan ? shotCount : waveCount;
-        // Fan still fires one "wave" of shots sequentially via FireWave using fan logic per interval
         if (active == BarragePattern.Fan)
         {
             if (fired < shotCount)
@@ -109,7 +115,7 @@ public class BarrageState : BaseState
             int spiralShots = shotCount + ringCount;
             if (fired < spiralShots)
             {
-                if (timer >= interval * 0.55f)
+                if (timer >= interval * 0.45f)
                 {
                     timer = 0f;
                     FireSpiralShot();
@@ -121,7 +127,8 @@ public class BarrageState : BaseState
         {
             if (wavesDone < totalWaves)
             {
-                if (timer >= interval * 1.6f)
+                float gap = active == BarragePattern.Storm ? interval * 1.25f : interval * 1.6f;
+                if (timer >= gap)
                 {
                     timer = 0f;
                     FireWave();
@@ -132,6 +139,21 @@ public class BarrageState : BaseState
 
         if (timer >= recover)
             enemyController.Navigator.GoToNextNode();
+    }
+
+    void UpdateStrafe()
+    {
+        if (strafeSpeed < 0.05f || !started) return;
+
+        Vector3 to = GetPlayerDir();
+        Vector3 perp = new Vector3(-to.y, to.x, 0f) * strafeSign;
+        float pulse = Mathf.Sin(Time.time * 7.5f);
+        // 횡이동 + 살짝 들락날락
+        Vector3 move = perp + to * (pulse * 0.45f);
+        enemyController.MoveInDirection(move, strafeSpeed);
+
+        if (Random.value < 0.012f)
+            strafeSign = -strafeSign;
     }
 
     void FireWave()
@@ -148,8 +170,11 @@ public class BarrageState : BaseState
                 break;
             case BarragePattern.Bloom:
                 FireRing(ringCount, wavesDone * 12f);
-                FireFanBurst(5, spreadAngle + 10f);
-                BossVfx.SpawnSparkBurst(enemyController.transform.position, shotColor, 12, 6f);
+                FireFanBurst(7, spreadAngle + 14f);
+                BossVfx.SpawnSparkBurst(enemyController.transform.position, shotColor, 14, 6.5f);
+                break;
+            case BarragePattern.Storm:
+                FireStorm();
                 break;
             case BarragePattern.Spiral:
                 FireSpiralShot();
@@ -158,14 +183,31 @@ public class BarrageState : BaseState
                 FireFanShot();
                 break;
         }
-        CombatCamera.Instance?.Shake(0.08f, 0.1f, 30f);
+        CombatCamera.Instance?.Shake(0.08f, active == BarragePattern.Storm ? 0.14f : 0.1f, 30f);
+    }
+
+    void FireStorm()
+    {
+        float o = wavesDone * 17f;
+        FireRing(ringCount, o);
+        FireRing(Mathf.Max(8, ringCount - 2), -o * 1.35f);
+        FireFanBurst(8, spreadAngle + 22f);
+        // 짧은 대각선 샷
+        Vector3 toPlayer = GetPlayerDir();
+        Vector3 perp = new Vector3(-toPlayer.y, toPlayer.x, 0f);
+        for (int i = -2; i <= 2; i++)
+        {
+            SpawnShot((toPlayer + perp * (i * 0.35f)).normalized, 0.22f, Color.Lerp(shotColor, Color.white, 0.35f));
+            SpawnShot((-toPlayer + perp * (i * 0.28f)).normalized, 0.2f, shotColor);
+        }
+        BossVfx.SpawnSparkBurst(enemyController.transform.position, shotColor, 22, 8f);
+        BossVfx.SpawnPulseRing(enemyController.transform.position, shotColor, 0.6f, 3.2f, 0.2f);
     }
 
     void FireFanShot()
     {
         float t = shotCount == 1 ? 0.5f : fired / (float)(shotCount - 1);
         float ang = Mathf.Lerp(-spreadAngle, spreadAngle, t);
-        // 약간의 파동으로 지그재그 팬
         ang += Mathf.Sin(fired * 1.2f) * 6f;
         SpawnShot(RotateTowardPlayer(ang), 0.3f, shotColor);
         fired++;
@@ -184,7 +226,6 @@ public class BarrageState : BaseState
 
     void FireRing(int count, float offsetDeg)
     {
-        Vector3 origin = enemyController.transform.position;
         for (int i = 0; i < count; i++)
         {
             float ang = offsetDeg + (360f / count) * i;
@@ -199,7 +240,6 @@ public class BarrageState : BaseState
     {
         float rad = spiralAng * Mathf.Deg2Rad;
         Vector3 dir = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f);
-        // 플레이어 쪽으로도 살짝 편향
         if (enemyController.PlayerTransform != null)
         {
             Vector3 toP = (enemyController.PlayerTransform.position - enemyController.transform.position);
@@ -208,7 +248,14 @@ public class BarrageState : BaseState
                 dir = (dir + toP.normalized * 0.35f).normalized;
         }
         SpawnShot(dir, 0.26f + (fired % 3) * 0.04f, shotColor);
-        spiralAng += 28f + Random.Range(-4f, 8f);
+        // 이중 나선
+        if (fired % 2 == 0)
+        {
+            float rad2 = (spiralAng + 180f) * Mathf.Deg2Rad;
+            Vector3 dir2 = new Vector3(Mathf.Cos(rad2), Mathf.Sin(rad2), 0f);
+            SpawnShot(dir2, 0.22f, Color.Lerp(shotColor, Color.white, 0.3f));
+        }
+        spiralAng += 26f + Random.Range(-3f, 10f);
         fired++;
         if (fired % 4 == 0)
             BossVfx.SpawnPulseRing(enemyController.transform.position, shotColor, 0.4f, 1.6f, 0.15f);
@@ -218,15 +265,16 @@ public class BarrageState : BaseState
     {
         Vector3 toPlayer = GetPlayerDir();
         Vector3 perp = new Vector3(-toPlayer.y, toPlayer.x, 0f);
-        float[] offsets = { -spreadAngle, -spreadAngle * 0.4f, 0f, spreadAngle * 0.4f, spreadAngle };
+        float[] offsets = { -spreadAngle, -spreadAngle * 0.55f, -spreadAngle * 0.2f, 0f, spreadAngle * 0.2f, spreadAngle * 0.55f, spreadAngle };
         foreach (float o in offsets)
         {
             SpawnShot(Quaternion.Euler(0f, 0f, o) * toPlayer, 0.28f, shotColor);
             SpawnShot(Quaternion.Euler(0f, 0f, o) * perp, 0.24f, Color.Lerp(shotColor, Color.white, 0.25f));
             SpawnShot(Quaternion.Euler(0f, 0f, o) * -perp, 0.24f, Color.Lerp(shotColor, Color.white, 0.25f));
+            SpawnShot(Quaternion.Euler(0f, 0f, o) * -toPlayer, 0.22f, Color.Lerp(shotColor, new Color(2f, 1.4f, 0.5f), 0.4f));
         }
-        fired += offsets.Length * 3;
-        BossVfx.SpawnSparkBurst(enemyController.transform.position, shotColor, 16, 7f);
+        fired += offsets.Length * 4;
+        BossVfx.SpawnSparkBurst(enemyController.transform.position, shotColor, 18, 7.5f);
     }
 
     Vector3 GetPlayerDir()
@@ -259,7 +307,7 @@ public class BarrageState : BaseState
         col.isTrigger = true;
         var rb = go.AddComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
-        float spd = projectileSpeed * Random.Range(0.92f, 1.08f);
+        float spd = projectileSpeed * Random.Range(0.88f, 1.14f);
         go.AddComponent<BossProjectile>().Init(dir, spd, damage);
     }
 

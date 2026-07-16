@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Boss_Charge_P3
   m_EditorClassIdentifier: 
   style: 4
-  chargeSpeed: 18
-  duration: 1.05
-  damage: 20
-  hitRadius: 2.4
-  zigzagAmp: 4.5
-  zigzagFreq: 14
-  curveTurnRate: 220
+  chargeSpeed: 21
+  duration: 1.1
+  damage: 22
+  hitRadius: 2.5
+  zigzagAmp: 5
+  zigzagFreq: 16
+  curveTurnRate: 260

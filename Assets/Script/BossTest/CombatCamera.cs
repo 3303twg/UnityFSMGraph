@@ -42,6 +42,8 @@ public class CombatCamera : MonoBehaviour
     float punchKickDecay = 8f;
     float shakeDurationMax = 0.01f;
     float rotationShake; // Z tilt in degrees
+    bool bossFocusCinematic;
+    float bossFocusWeight;
 
     void Awake()
     {
@@ -67,42 +69,67 @@ public class CombatCamera : MonoBehaviour
     void LateUpdate()
     {
         ResolveTargets();
-        if (player == null) return;
+        if (player == null && boss == null) return;
 
-        Vector3 target = player.position;
+        float focusSpeed = bossFocusCinematic ? 2.8f : 3.5f;
+        bossFocusWeight = Mathf.MoveTowards(
+            bossFocusWeight,
+            bossFocusCinematic && boss != null ? 1f : 0f,
+            Time.deltaTime * focusSpeed);
 
-        Vector3 desiredLook = Vector3.zero;
-        Vector3 mouse = Input.mousePosition;
-        mouse.z = Mathf.Abs(transform.position.z);
-        Vector3 world = cam.ScreenToWorldPoint(mouse);
-        world.z = 0f;
-        Vector3 toMouse = world - player.position;
-        toMouse.z = 0f;
-        if (toMouse.sqrMagnitude > 0.01f)
-            desiredLook = toMouse.normalized * lookAhead;
+        Vector3 target = player != null ? player.position : boss.position;
 
-        currentLookAhead = Vector3.SmoothDamp(currentLookAhead, desiredLook, ref lookVel, 1f / Mathf.Max(0.01f, lookAheadSmooth));
-        target += currentLookAhead;
+        if (!bossFocusCinematic && player != null)
+        {
+            Vector3 desiredLook = Vector3.zero;
+            Vector3 mouse = Input.mousePosition;
+            mouse.z = Mathf.Abs(transform.position.z);
+            Vector3 world = cam.ScreenToWorldPoint(mouse);
+            world.z = 0f;
+            Vector3 toMouse = world - player.position;
+            toMouse.z = 0f;
+            if (toMouse.sqrMagnitude > 0.01f)
+                desiredLook = toMouse.normalized * lookAhead;
+
+            currentLookAhead = Vector3.SmoothDamp(currentLookAhead, desiredLook, ref lookVel, 1f / Mathf.Max(0.01f, lookAheadSmooth));
+            target += currentLookAhead;
+        }
+        else
+        {
+            currentLookAhead = Vector3.Lerp(currentLookAhead, Vector3.zero, 1f - Mathf.Exp(-8f * Time.deltaTime));
+        }
 
         float bossDist = 8f;
         if (boss != null)
         {
-            Vector3 toBoss = boss.position - player.position;
+            Vector3 anchor = player != null ? player.position : boss.position;
+            Vector3 toBoss = boss.position - anchor;
             toBoss.z = 0f;
             bossDist = toBoss.magnitude;
-            float w = bossBias * (1f - Mathf.Clamp01(bossDist / bossBiasMaxDist));
-            target = Vector3.Lerp(target, boss.position, w);
+
+            if (bossFocusWeight > 0.001f)
+                target = Vector3.Lerp(target, boss.position, bossFocusWeight);
+            else if (player != null)
+            {
+                float w = bossBias * (1f - Mathf.Clamp01(bossDist / bossBiasMaxDist));
+                target = Vector3.Lerp(target, boss.position, w);
+            }
+            else
+                target = boss.position;
         }
 
         UpdateShakeAndKick();
 
+        float follow = bossFocusCinematic ? followSmooth * 1.35f : followSmooth;
         Vector3 desiredPos = new Vector3(target.x, target.y, 0f) + offset + shakeOffset + kickOffset;
-        float t = 1f - Mathf.Exp(-followSmooth * Time.deltaTime);
+        float t = 1f - Mathf.Exp(-follow * Time.deltaTime);
         transform.position = Vector3.Lerp(transform.position, desiredPos, t);
         transform.rotation = Quaternion.Euler(0f, 0f, rotationShake);
 
         float zoomT = Mathf.InverseLerp(closeDistance, farDistance, bossDist);
         float desiredSize = Mathf.Lerp(closeSize, farSize, zoomT);
+        if (bossFocusCinematic)
+            desiredSize = Mathf.Lerp(desiredSize, Mathf.Clamp(desiredSize * 0.92f, closeSize, farSize), bossFocusWeight);
 
         if (holdTimer > 0f)
         {
@@ -211,6 +238,16 @@ public class CombatCamera : MonoBehaviour
         Shake(shakeAmplitude, shakeDur);
         if (Mathf.Abs(zoomDelta) > 0.01f)
             PunchZoomOffset(zoomDelta, zoomDur);
+    }
+
+    /// <summary>사망 연출 등: 카메라를 보스로 고정.</summary>
+    public void SetBossFocus(bool enabled, Transform bossOverride = null)
+    {
+        bossFocusCinematic = enabled;
+        if (bossOverride != null)
+            boss = bossOverride;
+        else if (enabled)
+            ResolveTargets();
     }
 
     public void HitReaction(Vector3 fromWorld, float strength = 1f)

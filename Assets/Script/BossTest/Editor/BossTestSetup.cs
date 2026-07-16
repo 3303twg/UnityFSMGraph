@@ -22,11 +22,11 @@ public static class BossTestSetup
         var roar = CreateOrLoadSo<RoarStateSo>(Root + "/States/Boss_Roar.asset", so => so.duration = 1.0f);
         var stalk = CreateOrLoadSo<StalkStateSo>(Root + "/States/Boss_Stalk.asset", so =>
         {
-            so.duration = 2.0f;
-            so.orbitSpeed = 3.4f;
-            so.approachSpeed = 2.0f;
-            so.preferDistance = 6.5f;
-            so.forceDecideDistance = 3.0f;
+            so.duration = 0.95f;
+            so.orbitSpeed = 6.2f;
+            so.approachSpeed = 4.2f;
+            so.preferDistance = 5.8f;
+            so.forceDecideDistance = 4.2f;
         });
         var combo = CreateOrLoadSo<ComboMeleeStateSo>(Root + "/States/Boss_Combo.asset", so =>
         {
@@ -54,10 +54,10 @@ public static class BossTestSetup
         var chargeP3 = CreateOrLoadSo<ChargeStateSo>(Root + "/States/Boss_Charge_P3.asset", so =>
         {
             so.style = ChargeStyle.Double;
-            so.chargeSpeed = 18f;
-            so.duration = 1.05f;
-            so.damage = 20f;
-            so.hitRadius = 2.4f;
+            so.chargeSpeed = 21f;
+            so.duration = 1.1f;
+            so.damage = 22f;
+            so.hitRadius = 2.5f;
         });
         var chargeZig = CreateOrLoadSo<ChargeStateSo>(Root + "/States/Boss_Charge_Zig.asset", so =>
         {
@@ -96,19 +96,63 @@ public static class BossTestSetup
             so.projectileSpeed = 15f;
             so.ringCount = 12;
             so.waveCount = 3;
+            so.strafeSpeed = 3.2f;
         });
         var barrageP3 = CreateOrLoadSo<BarrageStateSo>(Root + "/States/Boss_Barrage_P3.asset", so =>
         {
-            so.pattern = BarragePattern.Bloom;
-            so.shotCount = 10;
-            so.interval = 0.1f;
-            so.spreadAngle = 45f;
+            so.pattern = BarragePattern.Storm;
+            so.shotCount = 14;
+            so.interval = 0.08f;
+            so.spreadAngle = 50f;
             so.damage = 6f;
-            so.projectileSpeed = 17f;
+            so.projectileSpeed = 18f;
+            so.ringCount = 16;
+            so.waveCount = 5;
+            so.windup = 0.28f;
+            so.recover = 0.28f;
+            so.strafeSpeed = 6.2f;
+        });
+        var barrageP3Spiral = CreateOrLoadSo<BarrageStateSo>(Root + "/States/Boss_Barrage_P3_Spiral.asset", so =>
+        {
+            so.pattern = BarragePattern.Spiral;
+            so.shotCount = 16;
+            so.interval = 0.055f;
+            so.spreadAngle = 40f;
+            so.damage = 5f;
+            so.projectileSpeed = 16.5f;
             so.ringCount = 14;
             so.waveCount = 4;
-            so.windup = 0.4f;
-            so.recover = 0.45f;
+            so.windup = 0.22f;
+            so.recover = 0.22f;
+            so.strafeSpeed = 7f;
+        });
+        var barrageP3Cross = CreateOrLoadSo<BarrageStateSo>(Root + "/States/Boss_Barrage_P3_Cross.asset", so =>
+        {
+            so.pattern = BarragePattern.Cross;
+            so.shotCount = 12;
+            so.interval = 0.09f;
+            so.spreadAngle = 42f;
+            so.damage = 6f;
+            so.projectileSpeed = 17.5f;
+            so.ringCount = 12;
+            so.waveCount = 4;
+            so.windup = 0.25f;
+            so.recover = 0.25f;
+            so.strafeSpeed = 5.5f;
+        });
+        var barrageP3Bloom = CreateOrLoadSo<BarrageStateSo>(Root + "/States/Boss_Barrage_P3_Bloom.asset", so =>
+        {
+            so.pattern = BarragePattern.Bloom;
+            so.shotCount = 12;
+            so.interval = 0.085f;
+            so.spreadAngle = 48f;
+            so.damage = 6f;
+            so.projectileSpeed = 18f;
+            so.ringCount = 16;
+            so.waveCount = 5;
+            so.windup = 0.3f;
+            so.recover = 0.28f;
+            so.strafeSpeed = 5.8f;
         });
         var slam = CreateOrLoadSo<SlamStateSo>(Root + "/States/Boss_Slam.asset", so =>
         {
@@ -122,7 +166,7 @@ public static class BossTestSetup
             so.speed = 11f;
         });
         var recover = CreateOrLoadSo<RecoverStateSo>(Root + "/States/Boss_Recover.asset", so => so.duration = 0.5f);
-        var recoverShort = CreateOrLoadSo<RecoverStateSo>(Root + "/States/Boss_Recover_Short.asset", so => so.duration = 0.28f);
+        var recoverShort = CreateOrLoadSo<RecoverStateSo>(Root + "/States/Boss_Recover_Short.asset", so => so.duration = 0.16f);
         var enrage = CreateOrLoadSo<EnrageStateSo>(Root + "/States/Boss_Enrage.asset", so =>
         {
             so.duration = 1.15f;
@@ -137,16 +181,51 @@ public static class BossTestSetup
 
         // --- Specials ---
         var blink = CreateOrLoadSo<BlinkStrikeStateSo>(Root + "/States/Boss_Blink.asset", so => { });
-        var spin = CreateOrLoadSo<SpinRushStateSo>(Root + "/States/Boss_Spin.asset", so => { });
+        var spin = CreateOrLoadSo<SpinRushStateSo>(Root + "/States/Boss_Spin.asset", so =>
+        {
+            so.duration = 1.35f;
+            so.moveSpeed = 7.2f;
+            so.spinSpeed = 820f;
+            so.tickInterval = 0.16f;
+            so.damage = 4f;
+            so.hitRadius = 2.9f;
+        });
+        var spinP3 = CreateOrLoadSo<SpinRushStateSo>(Root + "/States/Boss_Spin_P3.asset", so =>
+        {
+            so.duration = 1.55f;
+            so.moveSpeed = 9f;
+            so.spinSpeed = 980f;
+            so.tickInterval = 0.14f;
+            so.damage = 5f;
+            so.hitRadius = 3.1f;
+        });
         var vacuum = CreateOrLoadSo<VacuumStateSo>(Root + "/States/Boss_Vacuum.asset", so => { });
         var nova = CreateOrLoadSo<NovaRingStateSo>(Root + "/States/Boss_Nova.asset", so => { });
-        var meteor = CreateOrLoadSo<MeteorRainStateSo>(Root + "/States/Boss_Meteor.asset", so => { });
+        var meteor = CreateOrLoadSo<MeteorRainStateSo>(Root + "/States/Boss_Meteor.asset", so =>
+        {
+            so.count = 12;
+            so.windup = 0.35f;
+            so.interval = 0.1f;
+            so.recover = 0.28f;
+            so.damage = 7f;
+            so.fallSpeed = 14f;
+        });
         var homing = CreateOrLoadSo<HomingVolleyStateSo>(Root + "/States/Boss_Homing.asset", so =>
         {
             so.count = 6;
             so.interval = 0.1f;
             so.speed = 6f;
             so.turnRate = 185f;
+            so.damage = 8f;
+        });
+        var homingP3 = CreateOrLoadSo<HomingVolleyStateSo>(Root + "/States/Boss_Homing_P3.asset", so =>
+        {
+            so.count = 10;
+            so.windup = 0.28f;
+            so.interval = 0.07f;
+            so.recover = 0.22f;
+            so.speed = 7.5f;
+            so.turnRate = 220f;
             so.damage = 8f;
         });
         var laser = CreateOrLoadSo<LaserSweepStateSo>(Root + "/States/Boss_Laser.asset", so =>
@@ -272,17 +351,25 @@ public static class BossTestSetup
         var nChargeCurve = AddNode(graph, "boss_charge_curve", NodeType.Action, "CurveCharge", new Vector2(x7, 580), chargeCurve);
         var nRecover2 = AddNode(graph, "boss_recover2", NodeType.Action, "Recover(P2)", new Vector2(x7, 460), recoverShort);
 
-        // Phase3 — big specials
+        // Phase3 — 탄막 다발 + 기동 콤보 (close / mid / far)
         var nP3Close = AddNode(graph, "boss_p3_close", NodeType.Transition, "P3 Dist<=Close", new Vector2(x4, 720), cmpCloseP3);
-        var nMeteor = AddNode(graph, "boss_meteor", NodeType.Action, "MeteorRain", new Vector2(x5, 680), meteor);
-        var nBlink3 = AddNode(graph, "boss_blink3", NodeType.Action, "Blink(P3)", new Vector2(x6, 660), blink);
-        var nSpin3 = AddNode(graph, "boss_spin3", NodeType.Action, "Spin(P3)", new Vector2(x7, 660), spin);
-        var nLaser3 = AddNode(graph, "boss_laser3", NodeType.Action, "Laser(P3)", new Vector2(x5, 840), laserP3);
-        var nBarrage3 = AddNode(graph, "boss_barrage3", NodeType.Action, "BloomBarrage", new Vector2(x6, 840), barrageP3);
-        var nCharge3Far = AddNode(graph, "boss_charge3_far", NodeType.Action, "FeintCharge(P3)", new Vector2(x6, 920), chargeFeint);
-        var nNova3 = AddNode(graph, "boss_nova3", NodeType.Action, "Nova(P3)", new Vector2(x7, 840), nova);
-        var nCharge3 = AddNode(graph, "boss_charge3", NodeType.Action, "DoubleCharge", new Vector2(x7, 740), chargeP3);
-        var nRecover3 = AddNode(graph, "boss_recover3", NodeType.Action, "Recover(P3)", new Vector2(x7, 920), recoverShort);
+        var nP3Mid = AddNode(graph, "boss_p3_mid", NodeType.Transition, "P3 Dist<=Mid", new Vector2(x4, 860), cmpMidP2);
+        var nMeteor = AddNode(graph, "boss_meteor", NodeType.Action, "MeteorRain", new Vector2(x5, 660), meteor);
+        var nBarrage3 = AddNode(graph, "boss_barrage3", NodeType.Action, "StormBarrage", new Vector2(x6, 640), barrageP3);
+        var nBlink3 = AddNode(graph, "boss_blink3", NodeType.Action, "Blink(P3)", new Vector2(x7, 620), blink);
+        var nSpin3 = AddNode(graph, "boss_spin3", NodeType.Action, "Spin(P3)", new Vector2(x7 + 220, 620), spinP3);
+        var nCharge3 = AddNode(graph, "boss_charge3", NodeType.Action, "DoubleCharge", new Vector2(x7 + 440, 620), chargeP3);
+        var nHoming3 = AddNode(graph, "boss_homing3", NodeType.Action, "Homing(P3)", new Vector2(x5, 820), homingP3);
+        var nBarrage3Spiral = AddNode(graph, "boss_barrage3_spiral", NodeType.Action, "SpiralBarrage", new Vector2(x6, 820), barrageP3Spiral);
+        var nChargeZig3 = AddNode(graph, "boss_charge_zig3", NodeType.Action, "ZigZag(P3)", new Vector2(x7, 820), chargeZig);
+        var nBarrage3Cross = AddNode(graph, "boss_barrage3_cross", NodeType.Action, "CrossBarrage", new Vector2(x7 + 220, 820), barrageP3Cross);
+        var nChargeCurve3 = AddNode(graph, "boss_charge_curve3", NodeType.Action, "Curve(P3)", new Vector2(x7 + 440, 820), chargeCurve);
+        var nLaser3 = AddNode(graph, "boss_laser3", NodeType.Action, "Laser(P3)", new Vector2(x5, 980), laserP3);
+        var nBarrage3Bloom = AddNode(graph, "boss_barrage3_bloom", NodeType.Action, "BloomBarrage", new Vector2(x6, 980), barrageP3Bloom);
+        var nVacuum3 = AddNode(graph, "boss_vacuum3", NodeType.Action, "Vacuum(P3)", new Vector2(x7, 980), vacuum);
+        var nCharge3Far = AddNode(graph, "boss_charge3_far", NodeType.Action, "FeintCharge(P3)", new Vector2(x7 + 220, 980), chargeFeint);
+        var nNova3 = AddNode(graph, "boss_nova3", NodeType.Action, "Nova(P3)", new Vector2(x7 + 440, 980), nova);
+        var nRecover3 = AddNode(graph, "boss_recover3", NodeType.Action, "Recover(P3)", new Vector2(x7 + 660, 820), recoverShort);
 
         var nVacuum = AddNode(graph, "boss_vacuum", NodeType.Action, "Vacuum", new Vector2(x3, 40), vacuum);
         var nEnrage = AddNode(graph, "boss_enrage", NodeType.Action, "Enrage", new Vector2(x2, 40), enrage);
@@ -337,15 +424,26 @@ public static class BossTestSetup
         AddEdge(graph, nChargeCurve.id, nRecover2.id, PortType.Output, "Out");
         AddEdge(graph, nRecover2.id, nRefStalk.id, PortType.Output, "Out");
 
-        // P3 close: Meteor→Blink→Spin→DoubleCharge | far: Laser→Bloom→FeintCharge→Nova
+        // P3 close: Meteor→Storm→Blink→Spin→Double
+        // P3 mid: Homing→Spiral→ZigZag→Cross→Curve
+        // P3 far: Laser→Bloom→Vacuum→Feint→Nova
         AddEdge(graph, nP3Close.id, nMeteor.id, PortType.True, "True");
-        AddEdge(graph, nP3Close.id, nLaser3.id, PortType.False, "False");
-        AddEdge(graph, nMeteor.id, nBlink3.id, PortType.Output, "Out");
+        AddEdge(graph, nP3Close.id, nP3Mid.id, PortType.False, "False");
+        AddEdge(graph, nP3Mid.id, nHoming3.id, PortType.True, "True");
+        AddEdge(graph, nP3Mid.id, nLaser3.id, PortType.False, "False");
+        AddEdge(graph, nMeteor.id, nBarrage3.id, PortType.Output, "Out");
+        AddEdge(graph, nBarrage3.id, nBlink3.id, PortType.Output, "Out");
         AddEdge(graph, nBlink3.id, nSpin3.id, PortType.Output, "Out");
         AddEdge(graph, nSpin3.id, nCharge3.id, PortType.Output, "Out");
         AddEdge(graph, nCharge3.id, nRecover3.id, PortType.Output, "Out");
-        AddEdge(graph, nLaser3.id, nBarrage3.id, PortType.Output, "Out");
-        AddEdge(graph, nBarrage3.id, nCharge3Far.id, PortType.Output, "Out");
+        AddEdge(graph, nHoming3.id, nBarrage3Spiral.id, PortType.Output, "Out");
+        AddEdge(graph, nBarrage3Spiral.id, nChargeZig3.id, PortType.Output, "Out");
+        AddEdge(graph, nChargeZig3.id, nBarrage3Cross.id, PortType.Output, "Out");
+        AddEdge(graph, nBarrage3Cross.id, nChargeCurve3.id, PortType.Output, "Out");
+        AddEdge(graph, nChargeCurve3.id, nRecover3.id, PortType.Output, "Out");
+        AddEdge(graph, nLaser3.id, nBarrage3Bloom.id, PortType.Output, "Out");
+        AddEdge(graph, nBarrage3Bloom.id, nVacuum3.id, PortType.Output, "Out");
+        AddEdge(graph, nVacuum3.id, nCharge3Far.id, PortType.Output, "Out");
         AddEdge(graph, nCharge3Far.id, nNova3.id, PortType.Output, "Out");
         AddEdge(graph, nNova3.id, nRecover3.id, PortType.Output, "Out");
         AddEdge(graph, nRecover3.id, nRefStalk.id, PortType.Output, "Out");
@@ -363,7 +461,7 @@ public static class BossTestSetup
 
         Selection.activeObject = graph;
         Debug.Log(
-            "보스 FSM 갱신: 전페이즈 돌진 + 레이저 예고→본타\n" +
+            "보스 FSM 갱신: P3 탄막 3루트 + 전페이즈 기동 강화\n" +
             "메뉴 1번 재실행 후 Play.");
     }
 
@@ -405,7 +503,7 @@ public static class BossTestSetup
             maxHp = 200f,
             hp = 200f,
             detectionDistance = 20f,
-            moveSpeed = 4.5f
+            moveSpeed = 5.8f
         };
 
         if (Camera.main != null)

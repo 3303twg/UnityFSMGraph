@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04f31c8395e9e34aa184eea2a801732, type: 3}
   m_Name: Boss_Cmp_Melee_P2
   m_EditorClassIdentifier: 
-  compareOperator: 5
-  leftKey: 2
+  compareOperator: 2
+  leftKey: 4
   rightKey: 4.2

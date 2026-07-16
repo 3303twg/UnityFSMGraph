@@ -41,6 +41,18 @@ public class HomingVolleyState : BaseState
     {
         timer += Time.deltaTime;
         enemyController.FacePlayer();
+        // 발사 중에도 옆으로 슬라이드
+        if (started && enemyController.PlayerTransform != null)
+        {
+            Vector3 to = enemyController.PlayerTransform.position - enemyController.transform.position;
+            to.z = 0f;
+            if (to.sqrMagnitude > 0.01f)
+            {
+                to.Normalize();
+                Vector3 side = new Vector3(-to.y, to.x, 0f);
+                enemyController.MoveInDirection(side * Mathf.Sin(Time.time * 4f) + to * 0.15f, 4.2f);
+            }
+        }
 
         if (!started)
         {
