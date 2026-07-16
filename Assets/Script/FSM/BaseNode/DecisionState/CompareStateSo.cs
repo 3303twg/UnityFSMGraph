@@ -6,7 +6,7 @@ using UnityEngine;
 public class CompareStateSo : BaseStateSo<CompareState>
 {
     public CompareOperatorType compareOperator;
-    public BlackboardKey leftKey;
+    public string leftKey;
     //public BlackboardKey rightKey;
     public float rightKey;
     

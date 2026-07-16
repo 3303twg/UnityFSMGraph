@@ -7,6 +7,6 @@ using UnityEngine;
 public class MonitorStateSo : BaseStateSo<MonitorState>
 {
     public CompareOperatorType compareOperator;
-    public BlackboardKey leftKey;
+    public string leftKey;
     public float rightKey;
 }

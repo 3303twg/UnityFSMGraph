@@ -159,7 +159,7 @@ public class GraphWindowInspectorView : VisualElement
             return;
         }
 
-        BuildBlackboardFields(boundController);
+        //BuildBlackboardFields(boundController);
 
         if (node.nodeType == NodeType.Entry || node.stateSo == null)
         {
@@ -207,7 +207,7 @@ public class GraphWindowInspectorView : VisualElement
         EditorApplication.update -= OnEditorUpdate;
         EditorApplication.update += OnEditorUpdate;
     }
-
+    /*
     void BuildBlackboardFields(EnemyController controller)
     {
         var section = new VisualElement();
@@ -242,7 +242,7 @@ public class GraphWindowInspectorView : VisualElement
         }
 
         root.Add(MakeSection("Blackboard (런타임 값)", section));
-    }
+    }*/
 
     void OnEditorUpdate()
     {

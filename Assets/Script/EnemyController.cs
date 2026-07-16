@@ -25,28 +25,12 @@ public class EnemyController : MonoBehaviour
         set => runtimeDebugState = value;
     }
 
-    public Dictionary<BlackboardKey, object> blackboard = new Dictionary<BlackboardKey, object>();
 
     public void Init()
     {
         enemyStat.hp = enemyStat.maxHp;
-        InitBlackboard();
     }
 
-    void InitBlackboard()
-    {
-        blackboard[BlackboardKey.CurHp] = enemyStat.hp;
-    }
-
-    public object GetBlackboardValue(BlackboardKey key)
-    {
-        return blackboard[key];
-    }
-
-    public void SetBlackboardValue(BlackboardKey key, object value)
-    {
-        blackboard[key] = value;
-    }
 
     private void Awake()
     {
@@ -69,6 +53,6 @@ public class EnemyController : MonoBehaviour
     public void TakeDamage()
     {
         enemyStat.hp -= 1f;
-        blackboard[BlackboardKey.CurHp] = enemyStat.hp;
+        //blackboard[BlackboardKey.CurHp] = enemyStat.hp;
     }
 }

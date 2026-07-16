@@ -8,7 +8,7 @@ public class MonitorState : BaseState, IFSMMonitor
     //얘는 상태일 필요가 없는데?(상태로 해도 상관없긴 하지)
     //어디서 틱체크하지?
     public CompareOperatorType compareOperator;
-    public BlackboardKey leftKey;
+    public string leftKey;
     public float rightKey;
     [NonSerialized] object left;
     [NonSerialized] object right;
@@ -30,7 +30,7 @@ public class MonitorState : BaseState, IFSMMonitor
     }
     public override void Update()
     {
-        hit = Compare(enemyController.GetBlackboardValue(leftKey), (object)rightKey);
+        hit = Compare(enemyController.GraphRuntime.blackboard.Get(leftKey), (object)rightKey);
         if (isUsed)
         {
             if (!hit)

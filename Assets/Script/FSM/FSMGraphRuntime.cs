@@ -11,6 +11,8 @@ public class FSMGraphRuntime : IFSMNavigator
     readonly Dictionary<(string nodeId, PortType port), string> nextNodeByPort = new();
     readonly Dictionary<string, List<EdgeData>> outEdges = new();
 
+    public Blackboard blackboard = new Blackboard();
+
     public string CurrentNodeId { get; set; }
     public FSMGraphSo Graph => graph;
 

@@ -14,6 +14,8 @@ public class FSMGraphSo : ScriptableObject
     [SerializeField]
     public List<EdgeData> edges = new();
 
+    public Blackboard blackboard;
+
 
     //이건 좀 수정하든가 해야겠다
     public NodeData GetNode(string id) => nodes.FirstOrDefault(n => n.id == id);

@@ -6,7 +6,7 @@ using UnityEngine;
 public class CompareState : BaseState
 {
     public CompareOperatorType compareOperator;
-    public BlackboardKey leftKey;
+    public string leftKey;
     public float rightKey;
 
     [NonSerialized] object left;
@@ -22,7 +22,7 @@ public class CompareState : BaseState
 
     public override void Enter()
     {
-        left = enemyController.GetBlackboardValue(leftKey);
+        left = enemyController.GraphRuntime.blackboard.Get(leftKey);
         right = rightKey;
 
         if (Compare(left, right))
