@@ -18,49 +18,49 @@ MonoBehaviour:
   - id: entryNode
     nodeType: 0
     title: Entry
-    position: {x: -56, y: 289}
+    position: {x: -24, y: 261}
     stateSo: {fileID: 0}
     referenceTargetId: 
   - id: 1690a348-dea1-4402-8ab2-e805700395fe
     nodeType: 2
     title: hiNode
-    position: {x: 189, y: 316}
+    position: {x: 165, y: 253}
     stateSo: {fileID: 11400000, guid: c61c05dcee0b1974d883c2ce5b83ed7c, type: 2}
     referenceTargetId: 
   - id: c3b65c8e-d678-4466-930a-c42fd9086aab
     nodeType: 1
     title: New_CompareNode
-    position: {x: 380, y: 316}
+    position: {x: 424, y: 243}
     stateSo: {fileID: 11400000, guid: 20c79d46e2559a2478c2db3943d24b79, type: 2}
     referenceTargetId: 
   - id: 97cd9034-3a92-4ffd-b6b4-0599907bceb5
     nodeType: 2
     title: New_Node
-    position: {x: 306, y: 644}
+    position: {x: 750, y: 584}
     stateSo: {fileID: 11400000, guid: fd3c67d9c93266c469967d531de48839, type: 2}
     referenceTargetId: 
   - id: 56961bf2-72a5-4c9c-92a3-6108c4e43493
     nodeType: 2
     title: 11111
-    position: {x: 658, y: 36}
+    position: {x: 778, y: -20}
     stateSo: {fileID: 11400000, guid: 96ff5b6a51a7f9643935a8dce64397a2, type: 2}
     referenceTargetId: 
   - id: 505e2f37-7b98-4cbb-bb2d-160bb37c2bb3
     nodeType: 2
     title: 4d4f4f
-    position: {x: 658, y: 241}
+    position: {x: 778, y: 166}
     stateSo: {fileID: 11400000, guid: 24e36854b41e6974da4b49a032428c76, type: 2}
     referenceTargetId: 
   - id: eaf411b3-1467-498e-b9ec-68be0d329fe2
     nodeType: 3
     title: New_MonitorNode
-    position: {x: -56, y: 32}
+    position: {x: -24, y: -25}
     stateSo: {fileID: 11400000, guid: a736817fd3f03c246af200843455ca43, type: 2}
     referenceTargetId: 
   - id: 978412a3-3ed1-496c-a850-4ffb3d63d690
     nodeType: 4
     title: Ref => hiNode
-    position: {x: 189, y: 35}
+    position: {x: 246, y: -38}
     stateSo: {fileID: 0}
     referenceTargetId: 1690a348-dea1-4402-8ab2-e805700395fe
   edges:
@@ -70,12 +70,6 @@ MonoBehaviour:
     outputPortType: 1
     inputPortType: 0
     outPortName: Out
-  - id: 
-    outputNodeId: c3b65c8e-d678-4466-930a-c42fd9086aab
-    inputNodeId: 97cd9034-3a92-4ffd-b6b4-0599907bceb5
-    outputPortType: 3
-    inputPortType: 0
-    outPortName: False
   - id: 
     outputNodeId: 97cd9034-3a92-4ffd-b6b4-0599907bceb5
     inputNodeId: 1690a348-dea1-4402-8ab2-e805700395fe
@@ -95,6 +89,12 @@ MonoBehaviour:
     inputPortType: 0
     outPortName: Out
   - id: 
+    outputNodeId: c3b65c8e-d678-4466-930a-c42fd9086aab
+    inputNodeId: 505e2f37-7b98-4cbb-bb2d-160bb37c2bb3
+    outputPortType: 2
+    inputPortType: 0
+    outPortName: True
+  - id: 
     outputNodeId: eaf411b3-1467-498e-b9ec-68be0d329fe2
     inputNodeId: 978412a3-3ed1-496c-a850-4ffb3d63d690
     outputPortType: 1
@@ -102,13 +102,30 @@ MonoBehaviour:
     outPortName: Out
   - id: 
     outputNodeId: c3b65c8e-d678-4466-930a-c42fd9086aab
-    inputNodeId: 505e2f37-7b98-4cbb-bb2d-160bb37c2bb3
-    outputPortType: 2
+    inputNodeId: 97cd9034-3a92-4ffd-b6b4-0599907bceb5
+    outputPortType: 3
     inputPortType: 0
-    outPortName: True
+    outPortName: False
   - id: 
     outputNodeId: 505e2f37-7b98-4cbb-bb2d-160bb37c2bb3
     inputNodeId: 56961bf2-72a5-4c9c-92a3-6108c4e43493
     outputPortType: 1
     inputPortType: 0
     outPortName: Out
+  blackboard:
+    variables:
+    - rid: 7757494774119792653
+    - rid: 7757494774119792654
+  references:
+    version: 2
+    RefIds:
+    - rid: 7757494774119792653
+      type: {class: FloatVariable, ns: , asm: Assembly-CSharp}
+      data:
+        key: Hp
+        value: 0
+    - rid: 7757494774119792654
+      type: {class: FloatVariable, ns: , asm: Assembly-CSharp}
+      data:
+        key: test
+        value: 0

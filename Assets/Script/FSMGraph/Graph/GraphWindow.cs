@@ -35,9 +35,8 @@ public class GraphWindow : EditorWindow
         currentGraph = graph;
         if (currentGraph.blackboard == null)
         {
+            Debug.Log("?");
             currentGraph.blackboard = new Blackboard();
-            currentGraph.blackboard.blackboardDic["Test"] = (object)5.4f;
-            currentGraph.blackboard.blackboardDic["Test2"] = (object)23;
         }
             titleContent = new GUIContent(graph.name);
 
@@ -124,7 +123,11 @@ public class GraphWindow : EditorWindow
         var button = new Button(() =>
         {
             string tempName = Guid.NewGuid().ToString();
-            currentGraph.blackboard.blackboardDic[tempName] = 5.2f;
+            currentGraph.blackboard.Add(new FloatVariable
+            {
+                key = tempName,
+                value = 0
+            });
             ReBuildBlackboard();
 
             blackboardContentRoot.schedule.Execute(() =>
@@ -165,12 +168,12 @@ public class GraphWindow : EditorWindow
         var section = new VisualElement();
         section.style.flexDirection = FlexDirection.Column;
 
-        foreach (var key in currentGraph.blackboard.blackboardDic.Keys)
+        foreach (var key in currentGraph.blackboard.lookUp.Keys)
         {
             var element = new VisualElement();
             element.style.flexDirection = FlexDirection.Row;
 
-            if (!currentGraph.blackboard.blackboardDic.TryGetValue(key, out object value))
+            if (!currentGraph.blackboard.TryGet(key, out object value))
                 continue;
             
             if (value is float floatValue)
@@ -186,8 +189,7 @@ public class GraphWindow : EditorWindow
                     {
                         
                         if (key == textfield.value) return;
-                        currentGraph.blackboard.blackboardDic[textfield.value] = currentGraph.blackboard.blackboardDic[key];
-                        currentGraph.blackboard.blackboardDic.Remove(key);
+                        currentGraph.blackboard.Rename(key, textfield.value);
                         EditorUtility.SetDirty(currentGraph);
                         ReBuildBlackboard();
                         return;
@@ -197,8 +199,9 @@ public class GraphWindow : EditorWindow
                 { 
 
                     if (key == textfield.value) return;
-                    currentGraph.blackboard.blackboardDic[textfield.value] = currentGraph.blackboard.blackboardDic[key];
-                    currentGraph.blackboard.blackboardDic.Remove(key);
+                    currentGraph.blackboard.Rename(key, textfield.value);
+                    //currentGraph.blackboard.blackboardDic[textfield.value] = currentGraph.blackboard.blackboardDic[key];
+                    //currentGraph.blackboard.blackboardDic.Remove(key);
                     EditorUtility.SetDirty(currentGraph);
                     ReBuildBlackboard();
                     return;
@@ -206,7 +209,10 @@ public class GraphWindow : EditorWindow
 
                 element.Add(textfield);
                 var field = new FloatField() { value = floatValue };
-                field.RegisterValueChangedCallback(evt => currentGraph.blackboard.Set<float>(key, evt.newValue));
+                field.RegisterValueChangedCallback(evt => {
+                    currentGraph.blackboard.Set(key, evt.newValue);
+                    EditorUtility.SetDirty(currentGraph);
+                    });
                 element.Add(field);
                 
 
@@ -217,7 +223,10 @@ public class GraphWindow : EditorWindow
                 
                 element.style.flexDirection = FlexDirection.Row;
                 var field = new IntegerField("TExxxtt") { value = intValue };
-                field.RegisterValueChangedCallback(evt => currentGraph.blackboard.Set<int>(key, evt.newValue));
+                field.RegisterValueChangedCallback(evt => {
+                    currentGraph.blackboard.Set(key, evt.newValue);
+                    EditorUtility.SetDirty(currentGraph);
+                });
                 element.Add(field);
             }
             //스트링 있을수 예외
@@ -236,7 +245,7 @@ public class GraphWindow : EditorWindow
             var button = new Button(() =>
             { 
 
-                currentGraph.blackboard.blackboardDic.Remove(key);
+                currentGraph.blackboard.Remove(key);
                 ReBuildBlackboard();
             });
             button.text = "X";

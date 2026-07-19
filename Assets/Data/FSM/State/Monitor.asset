@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Monitor
   m_EditorClassIdentifier: 
   compareOperator: 0
-  leftKey: 0
+  leftKey: Hp
   rightKey: 8

@@ -12,6 +12,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField]
     private StateMachine stateMachine;
 
+    [SerializeField]
     FSMGraphRuntime graphRuntime;
 
     [SerializeReference]
@@ -29,15 +30,16 @@ public class EnemyController : MonoBehaviour
     public void Init()
     {
         enemyStat.hp = enemyStat.maxHp;
+        graphRuntime.blackboard.Set("Hp", enemyStat.hp);
     }
 
 
     private void Awake()
     {
-        Init();
         stateMachine = new StateMachine();
         graphRuntime = new FSMGraphRuntime(graphSo, this, stateMachine);
         graphRuntime.Init();
+        Init();
     }
 
     private void Update()
@@ -53,6 +55,6 @@ public class EnemyController : MonoBehaviour
     public void TakeDamage()
     {
         enemyStat.hp -= 1f;
-        //blackboard[BlackboardKey.CurHp] = enemyStat.hp;
+        graphRuntime.blackboard.Set("Hp", enemyStat.hp);
     }
 }

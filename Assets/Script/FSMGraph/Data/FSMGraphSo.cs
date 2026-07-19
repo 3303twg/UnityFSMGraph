@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "FSM/Graph")]
@@ -14,7 +15,8 @@ public class FSMGraphSo : ScriptableObject
     [SerializeField]
     public List<EdgeData> edges = new();
 
-    public Blackboard blackboard;
+    [SerializeField]
+    public Blackboard blackboard;// = new Blackboard();
 
 
     //이건 좀 수정하든가 해야겠다
@@ -34,6 +36,11 @@ public class FSMGraphSo : ScriptableObject
         nodes.Add(entry);
         entryNodeId = entry.id;
     }
+    [ContextMenu("test")]
+    public void Tesst()
+    {
+    }
+    
 }
 
 

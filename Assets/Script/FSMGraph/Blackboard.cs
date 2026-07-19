@@ -1,45 +1,175 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
-public class Blackboard
+
+[Serializable]
+public class Blackboard : ISerializationCallbackReceiver
 {
-    public Dictionary<string, object> blackboardDic = new Dictionary<string, object>();
-    public event Action OnChanged; //이런게 있어야 UI를 갱신하든 하것지
+    [SerializeReference]
+    List<BlackboardVariable> variables = new();
+    [NonSerialized]
+    public Dictionary<string, BlackboardVariable> lookUp = new();
 
+
+    public event Action OnChanged; //이런게 있어야 UI를 갱신하든 하것지
 
     public object Get(string key)
     {
-        var value = blackboardDic[key];
-
-        return (object)value;
+        return lookUp.TryGetValue(key, out var v) ? v.GetValue() : null;
     }
-
-
-    /*
-    public T Get<T>(string key)
-    {
-        var value = blackboardDic[key];
-
-        return (T)value;
-    }
-    */
 
     public bool TryGet<T>(string key, out T value)
     {
-        if(blackboardDic.TryGetValue(key, out object dicValue))
+        if(lookUp.TryGetValue(key, out var v) && v.GetValue() is T typedValue)
         {
-            value = (T)dicValue;
+            value = typedValue;
             return true;
         }
         value = default;
         return false;
     }
 
-    public void Set<T>(string key, T value)
+    public void Set(string key, object value)
     {
-        blackboardDic[key] = value;
-        OnChanged?.Invoke();
+        if (!lookUp.TryGetValue(key, out var v))
+            throw new KeyNotFoundException();
+
+        v.SetValue(value);
     }
 
+    public void Add(BlackboardVariable variable)
+    {
+        if (lookUp.ContainsKey(variable.key))
+            throw new ArgumentException($"중복 키: {variable.key}");
+        variables.Add(variable);
+        lookUp.Add(variable.key, variable);
+    }
+
+    public void Remove(string key)
+    {
+        if (!lookUp.Remove(key, out var variable))
+            return;
+        variables.Remove(variable);
+    }
+
+    public void Rename(string oldKey, string newKey)
+    {
+        if (!lookUp.Remove(oldKey, out var v))
+            return;
+        if (lookUp.ContainsKey(newKey))
+            throw new ArgumentException($"중복 키: {newKey}");
+        v.key = newKey;
+        lookUp.Add(newKey, v);
+    }
+
+    public void OnBeforeSerialize()
+    {
+    }
+
+    public void OnAfterDeserialize()
+    {
+        lookUp = new Dictionary<string, BlackboardVariable>();
+
+        foreach(var v in variables)
+        {
+            if (v != null && !string.IsNullOrWhiteSpace(v.key))
+                lookUp[v.key] = v;
+        }
+    }
+
+
+    public Blackboard Clone()
+    {
+        var clone = new Blackboard();
+
+        foreach(var variable in variables)
+        {
+            clone.Add(variable switch
+            {
+                FloatVariable v => new FloatVariable
+                {
+                    key = v.key,
+                    value = v.value
+                },
+
+                BoolVariable v => new BoolVariable
+                {
+                    key = v.key,
+                    value = v.value
+                },
+
+                StringVariable v => new StringVariable
+                {
+                    key = v.key,
+                    value = v.value
+                },
+
+                ObjectVariable v => new ObjectVariable
+                {
+                    key = v.key,
+                    value = v.value
+                },
+                _ => throw new NotSupportedException(variable.GetType().Name)
+            });
+        }
+
+        return clone;
+    }
+}
+
+
+[Serializable]
+public abstract class BlackboardVariable
+{
+    public string key;
+    public abstract object GetValue();
+    public abstract void SetValue(object value);
+}
+
+[Serializable]
+public abstract class BlackboardVariable<T> : BlackboardVariable
+{
+    public T value;
+    public override object GetValue() => value;
+    public override void SetValue(object v) => value = (T)v;
+}
+
+
+[Serializable]
+public sealed class FloatVariable : BlackboardVariable
+{
+    public float value;
+
+    public override object GetValue() => value;
+    public override void SetValue(object v) => value = Convert.ToSingle(v);
+}
+
+[Serializable]
+public sealed class BoolVariable : BlackboardVariable
+{
+    public bool value;
+
+    public override object GetValue() => value;
+    public override void SetValue(object v) => value = Convert.ToBoolean(v);
+}
+
+[Serializable]
+public sealed class StringVariable : BlackboardVariable
+{
+    public string value;
+
+    public override object GetValue() => value;
+    public override void SetValue(object v) => value = Convert.ToString(v);
+}
+
+[Serializable]
+public sealed class ObjectVariable : BlackboardVariable
+{
+    public UnityEngine.Object value;
+
+    public override object GetValue() => value;
+    public override void SetValue(object v) => value = v as UnityEngine.Object;
 }

@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+[Serializable]
 public class FSMGraphRuntime : IFSMNavigator
 {
     readonly FSMGraphSo graph;
@@ -11,6 +14,7 @@ public class FSMGraphRuntime : IFSMNavigator
     readonly Dictionary<(string nodeId, PortType port), string> nextNodeByPort = new();
     readonly Dictionary<string, List<EdgeData>> outEdges = new();
 
+    [SerializeField]
     public Blackboard blackboard = new Blackboard();
 
     public string CurrentNodeId { get; set; }
@@ -27,10 +31,16 @@ public class FSMGraphRuntime : IFSMNavigator
     public void Init()
     {
         BuildCache();
+        InitBlackboard();
         CurrentNodeId = "entryNode";
         GoToPort(PortType.Output);
     }
 
+    void InitBlackboard()
+    {
+        blackboard = graph.blackboard.Clone();
+
+    }
     void BuildCache()
     {
         foreach (var node in graph.nodes)
