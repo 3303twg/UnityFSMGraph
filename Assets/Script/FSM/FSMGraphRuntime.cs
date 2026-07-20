@@ -7,7 +7,7 @@ using UnityEngine;
 public class FSMGraphRuntime : IFSMNavigator
 {
     readonly FSMGraphSo graph;
-    readonly EnemyController enemyController;
+    readonly IFSMAgent agent;
     readonly StateMachine stateMachine;
 
     readonly Dictionary<string, BaseState> statesByNodeId = new Dictionary<string, BaseState>();
@@ -21,10 +21,10 @@ public class FSMGraphRuntime : IFSMNavigator
     public FSMGraphSo Graph => graph;
 
     public List<BaseState> monitorList = new List<BaseState>();
-    public FSMGraphRuntime(FSMGraphSo graph, EnemyController enemyController, StateMachine stateMachine)
+    public FSMGraphRuntime(FSMGraphSo graph, IFSMAgent agent, StateMachine stateMachine)
     {
         this.graph = graph;
-        this.enemyController = enemyController;
+        this.agent = agent;
         this.stateMachine = stateMachine;
     }
 
@@ -47,7 +47,7 @@ public class FSMGraphRuntime : IFSMNavigator
         {
             if (node.stateSo == null) continue;
 
-            statesByNodeId[node.id] = node.stateSo.CreateState(enemyController, stateMachine);
+            statesByNodeId[node.id] = node.stateSo.CreateState(agent, stateMachine);
             if (node.nodeType == NodeType.Monitor)
             {
                 monitorList.Add(statesByNodeId[node.id]);

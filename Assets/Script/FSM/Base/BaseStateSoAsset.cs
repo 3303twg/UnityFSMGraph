@@ -2,6 +2,6 @@
 
 public abstract class BaseStateSoAsset : ScriptableObject
 {
-    public abstract BaseState CreateState(EnemyController controller, StateMachine stateMachine);
+    public abstract BaseState CreateState(IFSMAgent agent, StateMachine stateMachine);
 }
 

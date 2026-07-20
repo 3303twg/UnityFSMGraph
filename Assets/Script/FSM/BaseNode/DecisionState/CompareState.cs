@@ -12,8 +12,8 @@ public class CompareState : BaseState
     [NonSerialized] object left;
     [NonSerialized] object right;
 
-    public CompareState(EnemyController enemyController, StateMachine stateMachine, CompareStateSo data)
-        : base(enemyController, stateMachine)
+    public CompareState(IFSMAgent agent, StateMachine stateMachine, CompareStateSo data)
+        : base(agent, stateMachine)
     {
         compareOperator = data.compareOperator;
         leftKey = data.leftKey;
@@ -22,13 +22,13 @@ public class CompareState : BaseState
 
     public override void Enter()
     {
-        left = enemyController.GraphRuntime.blackboard.Get(leftKey);
+        left = agent.GraphRuntime.blackboard.Get(leftKey);
         right = rightKey;
 
         if (Compare(left, right))
-            enemyController.Navigator.GoToTrueNode();
+            agent.Navigator.GoToTrueNode();
         else
-            enemyController.Navigator.GoToFalseNode();
+            agent.Navigator.GoToFalseNode();
     }
 
     public bool Compare(object left, object right)

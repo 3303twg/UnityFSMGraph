@@ -132,6 +132,7 @@ GameObject:
   m_Component:
   - component: {fileID: 513554911}
   - component: {fileID: 513554910}
+  - component: {fileID: 513554912}
   m_Layer: 0
   m_Name: TestEnemy
   m_TagString: Untagged
@@ -151,13 +152,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a071247f07a0f54585814c28941b83f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  graphSo: {fileID: 11400000, guid: 78748a18d89edf7459a14f72f794aa86, type: 2}
   enemyStat:
     name: 
     maxHp: 10
     hp: 0
     detectionDistance: 0
     moveSpeed: 0
+  fSMAgent: {fileID: 513554912}
 --- !u!4 &513554911
 Transform:
   m_ObjectHideFlags: 0
@@ -173,6 +174,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &513554912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 513554909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce4827f5c44d34949b91d629487c2f35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  graphSo: {fileID: 11400000, guid: 78748a18d89edf7459a14f72f794aa86, type: 2}
+  runtimeDebugState:
+    rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0

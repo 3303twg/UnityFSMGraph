@@ -16,7 +16,7 @@ public class MonitorState : BaseState, IFSMMonitor
     public bool isUsed = false;
 
     bool hit;
-    public MonitorState(EnemyController enemyController, StateMachine stateMachine, MonitorStateSo data):base(enemyController, stateMachine)
+    public MonitorState(IFSMAgent agent, StateMachine stateMachine, MonitorStateSo data):base(agent, stateMachine)
     {
         compareOperator = data.compareOperator;
         leftKey = data.leftKey;
@@ -30,7 +30,7 @@ public class MonitorState : BaseState, IFSMMonitor
     }
     public override void Update()
     {
-        hit = Compare(enemyController.GraphRuntime.blackboard.Get(leftKey), (object)rightKey);
+        hit = Compare(agent.GraphRuntime.blackboard.Get(leftKey), (object)rightKey);
         if (isUsed)
         {
             if (!hit)
@@ -43,7 +43,7 @@ public class MonitorState : BaseState, IFSMMonitor
         if (hit)
         {
             isUsed = true;
-            enemyController.Navigator.GoToPortFrom(nodeId, PortType.Output);
+            agent.Navigator.GoToPortFrom(nodeId, PortType.Output);
 
         }
 

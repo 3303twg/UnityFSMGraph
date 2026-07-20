@@ -6,8 +6,8 @@ public class TestState : BaseState
 {
     public string textTest = "0";
 
-    public TestState(EnemyController enemyController, StateMachine stateMachine, TestStateSo data)
-        : base(enemyController, stateMachine)
+    public TestState(IFSMAgent agent, StateMachine stateMachine, TestStateSo data)
+        : base(agent, stateMachine)
     {
         textTest = data.testText;
     }
@@ -20,6 +20,6 @@ public class TestState : BaseState
     public override void Update()
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
-            enemyController.Navigator.GoToNextNode();
+            agent.Navigator.GoToNextNode();
     }
 }

@@ -367,8 +367,8 @@ public class GraphWindow : EditorWindow
             testGraphView?.ClearActiveNode();
             FSMGraphRuntimeDebugger.ClearActiveNode();
 
-            foreach (var controller in FindObjectsOfType<EnemyController>())
-                controller.RuntimeDebugState = null;
+            foreach (var agent in FindObjectsOfType<FSMAgent>())
+                agent.RuntimeDebugState = null;
         }
 
         if (state == PlayModeStateChange.EnteredPlayMode ||

@@ -5,6 +5,6 @@ using UnityEngine;
 
 public abstract class BaseStateSo<T> : BaseStateSoAsset where T : BaseState
 {
-    public override BaseState CreateState(EnemyController controller, StateMachine stateMachine)
-        => (T)Activator.CreateInstance(typeof(T), controller, stateMachine, this);
+    public override BaseState CreateState(IFSMAgent agent, StateMachine stateMachine)
+        => (T)Activator.CreateInstance(typeof(T), agent, stateMachine, this);
 }

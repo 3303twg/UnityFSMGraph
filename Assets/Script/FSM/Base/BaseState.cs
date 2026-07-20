@@ -4,12 +4,12 @@ using UnityEngine;
 [Serializable]
 public abstract class BaseState
 {
-    [NonSerialized] protected EnemyController enemyController;
+    [NonSerialized] protected IFSMAgent agent;
     [NonSerialized] protected StateMachine stateMachine;
 
-    public BaseState(EnemyController enemyController, StateMachine stateMachine)
+    public BaseState(IFSMAgent agent, StateMachine stateMachine)
     {
-        this.enemyController = enemyController;
+        this.agent = agent;
         this.stateMachine = stateMachine;
     }
 

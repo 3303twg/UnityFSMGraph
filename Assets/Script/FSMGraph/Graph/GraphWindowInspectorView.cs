@@ -16,7 +16,7 @@ public class GraphWindowInspectorView : VisualElement
     EdgeData boundEdge;
     FSMGraphSo graphDataSo;
 
-    EnemyController boundController;
+    FSMAgent boundController;
     SerializedObject boundControllerSo;
     VisualElement runtimeStateInspector;
 
@@ -263,11 +263,11 @@ public class GraphWindowInspectorView : VisualElement
         runtimeStateInspector = null;
     }
 
-    static EnemyController FindController(FSMGraphSo graph)
+    static FSMAgent FindController(FSMGraphSo graph)
     {
         if (graph == null) return null;
 
-        var controllers = UnityEngine.Object.FindObjectsOfType<EnemyController>();
+        var controllers = UnityEngine.Object.FindObjectsOfType<FSMAgent>();
         foreach (var controller in controllers)
         {
             if (controller.graphSo == graph)
