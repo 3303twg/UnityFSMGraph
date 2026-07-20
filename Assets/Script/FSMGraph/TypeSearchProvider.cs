@@ -11,23 +11,23 @@ public class TypeSearchProvider : ScriptableObject, ISearchWindowProvider
     string excludeNodeId;
     Action<Type> onSelect;
 
-    public static readonly Dictionary<string, Type> BlackboardTypes = new()
+    public static readonly Dictionary<string, Type> BlackboardTypes = new Dictionary<string, Type>()
 {
-    { "Bool", typeof(bool) },
-    { "Int", typeof(int) },
+   // { "Int", typeof(int) },
     { "Float", typeof(float) },
     { "String", typeof(string) },
+    { "Bool", typeof(bool) },
 
-    { "Vector2", typeof(Vector2) },
-    { "Vector3", typeof(Vector3) },
-    { "Color", typeof(Color) },
+   // { "Vector2", typeof(Vector2) },
+   // { "Vector3", typeof(Vector3) },
+   // { "Color", typeof(Color) },
 
     { "GameObject", typeof(GameObject) },
-    { "Transform", typeof(Transform) },
+    //{ "Transform", typeof(Transform) },
 
-    { "Int List", typeof(List<int>) },
-    { "Float List", typeof(List<float>) },
-    { "String List", typeof(List<string>) },
+  //  { "Int List", typeof(List<int>) },
+  //  { "Float List", typeof(List<float>) },
+  //  { "String List", typeof(List<string>) },
 };
 
 

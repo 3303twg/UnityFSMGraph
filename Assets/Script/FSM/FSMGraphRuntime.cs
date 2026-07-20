@@ -10,9 +10,9 @@ public class FSMGraphRuntime : IFSMNavigator
     readonly EnemyController enemyController;
     readonly StateMachine stateMachine;
 
-    readonly Dictionary<string, BaseState> statesByNodeId = new();
-    readonly Dictionary<(string nodeId, PortType port), string> nextNodeByPort = new();
-    readonly Dictionary<string, List<EdgeData>> outEdges = new();
+    readonly Dictionary<string, BaseState> statesByNodeId = new Dictionary<string, BaseState>();
+    readonly Dictionary<(string nodeId, PortType port), string> nextNodeByPort = new Dictionary<(string nodeId, PortType port), string>();
+    readonly Dictionary<string, List<EdgeData>> outEdges = new Dictionary<string, List<EdgeData>>();
 
     [SerializeField]
     public Blackboard blackboard = new Blackboard();

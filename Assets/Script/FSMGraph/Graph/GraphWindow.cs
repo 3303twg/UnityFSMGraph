@@ -1,5 +1,4 @@
 using System;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
@@ -11,6 +10,8 @@ public class GraphWindow : EditorWindow
     private TestGraphView testGraphView;
     private FSMGraphSo currentGraph;
     private GraphWindowInspectorView graphInspectorView;
+    VisualElement blackboardContentRoot;
+    bool blackboardExpanded = true;
 
     [MenuItem("Tool/GraphView")]
     static void OpenFromMenu()
@@ -34,11 +35,9 @@ public class GraphWindow : EditorWindow
     {
         currentGraph = graph;
         if (currentGraph.blackboard == null)
-        {
-            Debug.Log("?");
             currentGraph.blackboard = new Blackboard();
-        }
-            titleContent = new GUIContent(graph.name);
+
+        titleContent = new GUIContent(graph.name);
 
         rootVisualElement.Clear();
 
@@ -65,21 +64,14 @@ public class GraphWindow : EditorWindow
         split.Add(graphInspectorView);
 
         root.Add(split);
-
         root.Add(BuildBlackboardPanel());
-
-        
-
 
         ReBuildBlackboard();
         testGraphView.BindSelection();
 
         if (EditorApplication.isPlaying && !string.IsNullOrEmpty(FSMGraphRuntimeDebugger.ActiveNodeId))
             testGraphView.SetActiveNode(FSMGraphRuntimeDebugger.ActiveNodeId);
-
-        
     }
-    VisualElement blackboardContentRoot;
 
     VisualElement BuildBlackboardPanel()
     {
@@ -87,8 +79,8 @@ public class GraphWindow : EditorWindow
         panel.style.position = Position.Absolute;
         panel.style.top = 8;
         panel.style.left = 8;
-        panel.style.width = 220;
-        panel.style.maxHeight = 300;
+        panel.style.width = 320;
+        panel.style.maxHeight = 540;
         panel.style.backgroundColor = new Color(0.15f, 0.15f, 0.17f, 0.95f);
         panel.style.paddingTop = 8;
         panel.style.paddingBottom = 8;
@@ -106,56 +98,84 @@ public class GraphWindow : EditorWindow
         panel.style.borderTopRightRadius = 6;
         panel.style.borderBottomLeftRadius = 6;
         panel.style.borderBottomRightRadius = 6;
+
+        var header = new VisualElement();
+        header.style.flexDirection = FlexDirection.Row;
+        header.style.alignItems = Align.Center;
+        header.style.justifyContent = Justify.SpaceBetween;
+        header.style.marginBottom = 6;
+        header.style.minHeight = 22;
+
         var title = new Label("Blackboard");
         title.style.unityFontStyleAndWeight = FontStyle.Bold;
-        title.style.marginBottom = 6;
-        panel.Add(title);
-
-
-        
+        title.style.flexGrow = 1;
+        header.Add(title);
 
         blackboardContentRoot = new VisualElement();
+        blackboardContentRoot.style.flexGrow = 1;
+
         var scroll = new ScrollView();
+        scroll.style.flexGrow = 1;
+        scroll.style.minHeight = 120;
+        scroll.style.maxHeight = 540;
         scroll.Add(blackboardContentRoot);
-        panel.Add(scroll);
 
-        //아 만들고보니 object로 하니까 좀 어중간해졌네
-        var button = new Button(() =>
+        var addButton = new Button(() =>
         {
-            string tempName = Guid.NewGuid().ToString();
-            currentGraph.blackboard.Add(new FloatVariable
-            {
-                key = tempName,
-                value = 0
-            });
-            ReBuildBlackboard();
-
-            blackboardContentRoot.schedule.Execute(() =>
-            {
-                foreach (var textfield in blackboardContentRoot.Query<TextField>().ToList())
-                {
-                    if(textfield.text == tempName)
-                        textfield?.Focus();
-                }
-                
-            });
-            
-            /*
             var provider = ScriptableObject.CreateInstance<TypeSearchProvider>();
-            provider.Init(key =>
+            provider.Init(type =>
             {
+                string tempName = Guid.NewGuid().ToString();
+                currentGraph.blackboard.Add(Blackboard.CreateVariable(type, tempName));
+                EditorUtility.SetDirty(currentGraph);
+                ReBuildBlackboard();
 
-                //Guid.NewGuid().ToString();
-                //currentGraph.blackboard.blackboardDic[key] = null;
-                //BuildBlackboardPanel(); 레거시임 리빌드 해야함 애초에 쓰지도 않아 이부분
+                blackboardContentRoot.schedule.Execute(() =>
+                {
+                    foreach (var textfield in blackboardContentRoot.Query<TextField>().ToList())
+                    {
+                        if (textfield.value == tempName)
+                            textfield.Focus();
+                    }
+                });
+            });
 
-                
-
-            });*/
+            SearchWindow.Open(
+                new SearchWindowContext(GUIUtility.GUIToScreenPoint(Event.current.mousePosition)),
+                provider);
         });
-        button.text = "Add";
-        panel.Add(button);
+        addButton.text = "Add";
+        addButton.style.marginTop = 6;
+        addButton.style.height = 22;
+
+        var foldButton = new Button();
+        foldButton.style.width = 22;
+        foldButton.style.height = 20;
+        foldButton.style.flexShrink = 0;
+        foldButton.style.marginLeft = 4;
+        foldButton.style.unityTextAlign = TextAnchor.MiddleCenter;
+        foldButton.clicked += () =>
+        {
+            blackboardExpanded = !blackboardExpanded;
+            ApplyBlackboardFold(panel, foldButton, scroll, addButton);
+        };
+        header.Add(foldButton);
+
+        panel.Add(header);
+        panel.Add(scroll);
+        panel.Add(addButton);
+
+        ApplyBlackboardFold(panel, foldButton, scroll, addButton);
         return panel;
+    }
+
+    void ApplyBlackboardFold(VisualElement panel, Button foldButton, VisualElement scroll, VisualElement addButton)
+    {
+        foldButton.text = blackboardExpanded ? "▾" : "▸";
+        scroll.style.display = blackboardExpanded ? DisplayStyle.Flex : DisplayStyle.None;
+        addButton.style.display = blackboardExpanded ? DisplayStyle.Flex : DisplayStyle.None;
+        panel.style.maxHeight = blackboardExpanded ? 540 : 44;
+        panel.style.height = blackboardExpanded ? StyleKeyword.Auto : 44;
     }
 
     void ReBuildBlackboard()
@@ -163,98 +183,161 @@ public class GraphWindow : EditorWindow
         blackboardContentRoot.Clear();
         blackboardContentRoot.Add(BuildBlackboardFields());
     }
+
     VisualElement BuildBlackboardFields()
     {
         var section = new VisualElement();
         section.style.flexDirection = FlexDirection.Column;
+        section.style.width = Length.Percent(100);
 
-        foreach (var key in currentGraph.blackboard.lookUp.Keys)
+        foreach (var pair in currentGraph.blackboard.lookUp)
         {
-            var element = new VisualElement();
-            element.style.flexDirection = FlexDirection.Row;
-
-            if (!currentGraph.blackboard.TryGet(key, out object value))
+            string key = pair.Key;
+            BlackboardVariable variable = pair.Value;
+            if (variable == null)
                 continue;
-            
-            if (value is float floatValue)
+
+            var row = new VisualElement();
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.alignItems = Align.Center;
+            row.style.marginBottom = 4;
+            row.style.minHeight = 22;
+            row.style.width = Length.Percent(100);
+
+            row.Add(CreateKeyField(key));
+
+            VisualElement valueField;
+            switch (variable)
             {
-                //var field = new FloatField("Tesxxt") { value = floatValue };
-                var textfield = new TextField()
+                case FloatVariable floatVariable:
                 {
-                    value = key
-                };
-                textfield.RegisterCallback<KeyDownEvent>(evt =>
-                {
-                    if (evt.keyCode == KeyCode.Return)
+                    var field = new FloatField { value = floatVariable.value };
+                    field.RegisterValueChangedCallback(evt =>
                     {
-                        
-                        if (key == textfield.value) return;
-                        currentGraph.blackboard.Rename(key, textfield.value);
+                        currentGraph.blackboard.Set(key, evt.newValue);
                         EditorUtility.SetDirty(currentGraph);
-                        ReBuildBlackboard();
-                        return;
-                    }
-                });
-                textfield.RegisterCallback<FocusOutEvent>(evt =>
-                { 
-
-                    if (key == textfield.value) return;
-                    currentGraph.blackboard.Rename(key, textfield.value);
-                    //currentGraph.blackboard.blackboardDic[textfield.value] = currentGraph.blackboard.blackboardDic[key];
-                    //currentGraph.blackboard.blackboardDic.Remove(key);
-                    EditorUtility.SetDirty(currentGraph);
-                    ReBuildBlackboard();
-                    return;
-                });
-
-                element.Add(textfield);
-                var field = new FloatField() { value = floatValue };
-                field.RegisterValueChangedCallback(evt => {
-                    currentGraph.blackboard.Set(key, evt.newValue);
-                    EditorUtility.SetDirty(currentGraph);
                     });
-                element.Add(field);
-                
-
+                    valueField = field;
+                    break;
+                }
+                case BoolVariable boolVariable:
+                {
+                    var toggle = new Toggle { value = boolVariable.value };
+                    toggle.style.marginLeft = 2;
+                    toggle.RegisterValueChangedCallback(evt =>
+                    {
+                        currentGraph.blackboard.Set(key, evt.newValue);
+                        EditorUtility.SetDirty(currentGraph);
+                    });
+                    valueField = toggle;
+                    break;
+                }
+                case StringVariable stringVariable:
+                {
+                    var field = new TextField { value = stringVariable.value ?? string.Empty };
+                    field.RegisterValueChangedCallback(evt =>
+                    {
+                        currentGraph.blackboard.Set(key, evt.newValue);
+                        EditorUtility.SetDirty(currentGraph);
+                    });
+                    valueField = field;
+                    break;
+                }
+                case GameObjectVariable gameObjectVariable:
+                {
+                    var objectField = new ObjectField
+                    {
+                        objectType = typeof(GameObject),
+                        allowSceneObjects = false,
+                        value = gameObjectVariable.value
+                    };
+                    objectField.label = string.Empty;
+                    objectField.RegisterValueChangedCallback(evt =>
+                    {
+                        currentGraph.blackboard.Set(key, evt.newValue);
+                        EditorUtility.SetDirty(currentGraph);
+                    });
+                    valueField = objectField;
+                    break;
+                }
+                default:
+                    valueField = new Label(variable.GetType().Name);
+                    break;
             }
 
-            else if (value is int intValue)
+            StyleValueField(valueField);
+            row.Add(valueField);
+
+            var removeButton = new Button(() =>
             {
-                
-                element.style.flexDirection = FlexDirection.Row;
-                var field = new IntegerField("TExxxtt") { value = intValue };
-                field.RegisterValueChangedCallback(evt => {
-                    currentGraph.blackboard.Set(key, evt.newValue);
-                    EditorUtility.SetDirty(currentGraph);
-                });
-                element.Add(field);
-            }
-            //스트링 있을수 예외
-            /* else
-             {
-                 var field = new TextValueField<string>(key.ToString()) { value = intValue };
-                 field.RegisterValueChangedCallback(evt => currentGraph.blackboard.Set<string>(key, evt.newValue));
-                 section.Add(field);
-                 continue;
-             }*/
-
-            //section.Add(new Label($"{key}: {value}"));
-
-            section.Add(element);
-
-            var button = new Button(() =>
-            { 
-
                 currentGraph.blackboard.Remove(key);
+                EditorUtility.SetDirty(currentGraph);
                 ReBuildBlackboard();
-            });
-            button.text = "X";
-            element.Add(button);
+            })
+            {
+                text = "X"
+            };
+            removeButton.style.width = 22;
+            removeButton.style.height = 20;
+            removeButton.style.marginLeft = 4;
+            removeButton.style.flexShrink = 0;
+            row.Add(removeButton);
 
-
-
+            section.Add(row);
         }
-        return (section);
+
+        return section;
+    }
+
+    static void StyleValueField(VisualElement field)
+    {
+        field.style.flexGrow = 1;
+        field.style.flexShrink = 1;
+        field.style.minWidth = 120;
+        field.style.height = 20;
+        field.style.marginLeft = 4;
+        field.style.marginRight = 0;
+    }
+
+    TextField CreateKeyField(string key)
+    {
+        var keyField = new TextField { value = key };
+        keyField.style.width = 88;
+        keyField.style.minWidth = 72;
+        keyField.style.maxWidth = 100;
+        keyField.style.height = 20;
+        keyField.style.flexShrink = 0;
+        keyField.style.marginRight = 0;
+
+        void TryRename()
+        {
+            string newKey = keyField.value?.Trim();
+            if (string.IsNullOrEmpty(newKey) || newKey == key)
+                return;
+
+            if (currentGraph.blackboard.lookUp.ContainsKey(newKey))
+            {
+                Debug.LogWarning($"이미 존재하는 키: {newKey}");
+                keyField.SetValueWithoutNotify(key);
+                return;
+            }
+
+            currentGraph.blackboard.Rename(key, newKey);
+            EditorUtility.SetDirty(currentGraph);
+            ReBuildBlackboard();
+        }
+
+        keyField.RegisterCallback<KeyDownEvent>(evt =>
+        {
+            if (evt.keyCode != KeyCode.Return && evt.keyCode != KeyCode.KeypadEnter)
+                return;
+
+            TryRename();
+            evt.StopPropagation();
+        });
+
+        keyField.RegisterCallback<FocusOutEvent>(_ => TryRename());
+        return keyField;
     }
 
     private void OnEnable()

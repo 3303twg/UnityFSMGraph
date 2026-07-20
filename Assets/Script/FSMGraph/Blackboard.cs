@@ -9,9 +9,9 @@ using UnityEngine;
 public class Blackboard : ISerializationCallbackReceiver
 {
     [SerializeReference]
-    List<BlackboardVariable> variables = new();
+    List<BlackboardVariable> variables = new List<BlackboardVariable>();
     [NonSerialized]
-    public Dictionary<string, BlackboardVariable> lookUp = new();
+    public Dictionary<string, BlackboardVariable> lookUp = new Dictionary<string, BlackboardVariable>();
 
 
     public event Action OnChanged; //이런게 있어야 UI를 갱신하든 하것지
@@ -40,7 +40,16 @@ public class Blackboard : ISerializationCallbackReceiver
         v.SetValue(value);
     }
 
+
     public void Add(BlackboardVariable variable)
+    {
+        if (lookUp.ContainsKey(variable.key))
+            throw new ArgumentException($"중복 키: {variable.key}");
+        variables.Add(variable);
+        lookUp.Add(variable.key, variable);
+    }
+
+    public void Add<T>(BlackboardVariable<T> variable)
     {
         if (lookUp.ContainsKey(variable.key))
             throw new ArgumentException($"중복 키: {variable.key}");
@@ -80,6 +89,18 @@ public class Blackboard : ISerializationCallbackReceiver
         }
     }
 
+    public static BlackboardVariable CreateVariable(Type type, string key)
+    {
+        if (type == typeof(float))
+            return new FloatVariable { key = key, value = 0f };
+        if (type == typeof(bool))
+            return new BoolVariable { key = key, value = false };
+        if (type == typeof(string))
+            return new StringVariable { key = key, value = string.Empty };
+        if (typeof(UnityEngine.GameObject).IsAssignableFrom(type))
+            return new GameObjectVariable { key = key, value = null };
+        throw new NotSupportedException($"Unsupported blackboard type: {type}");
+    }
 
     public Blackboard Clone()
     {
@@ -107,7 +128,7 @@ public class Blackboard : ISerializationCallbackReceiver
                     value = v.value
                 },
 
-                ObjectVariable v => new ObjectVariable
+                GameObjectVariable v => new GameObjectVariable
                 {
                     key = v.key,
                     value = v.value
@@ -130,7 +151,7 @@ public abstract class BlackboardVariable
 }
 
 [Serializable]
-public abstract class BlackboardVariable<T> : BlackboardVariable
+public class BlackboardVariable<T> : BlackboardVariable
 {
     public T value;
     public override object GetValue() => value;
@@ -166,10 +187,10 @@ public sealed class StringVariable : BlackboardVariable
 }
 
 [Serializable]
-public sealed class ObjectVariable : BlackboardVariable
+public sealed class GameObjectVariable : BlackboardVariable
 {
-    public UnityEngine.Object value;
+    public UnityEngine.GameObject value;
 
     public override object GetValue() => value;
-    public override void SetValue(object v) => value = v as UnityEngine.Object;
+    public override void SetValue(object v) => value = v as UnityEngine.GameObject;
 }

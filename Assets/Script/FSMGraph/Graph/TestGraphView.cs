@@ -16,7 +16,7 @@ public class TestGraphView : GraphView
     GraphWindowInspectorView inspector;
     public Action OnGraphChanged;
 
-    readonly Dictionary<string, NodeView> nodeViewsById = new();
+    readonly Dictionary<string, NodeView> nodeViewsById = new Dictionary<string, NodeView>();
     string activeNodeId;
 
     public TestGraphView(FSMGraphSo graphSo, GraphWindowInspectorView graphWindowInspectorView)

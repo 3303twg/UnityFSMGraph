@@ -11,9 +11,9 @@ public class FSMGraphSo : ScriptableObject
     //흠 이거 id 두개로 할 필요있나?
     public string id;
     [SerializeField]
-    public List<NodeData> nodes = new();
+    public List<NodeData> nodes = new List<NodeData>();
     [SerializeField]
-    public List<EdgeData> edges = new();
+    public List<EdgeData> edges = new List<EdgeData>();
 
     [SerializeField]
     public Blackboard blackboard;// = new Blackboard();
