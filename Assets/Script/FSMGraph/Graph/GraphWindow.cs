@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 public class GraphWindow : EditorWindow
 {
-    private TestGraphView testGraphView;
+    private FSMGraphView graphView;
     private FSMGraphSo currentGraph;
     private GraphWindowInspectorView graphInspectorView;
     VisualElement blackboardContentRoot;
@@ -47,7 +47,7 @@ public class GraphWindow : EditorWindow
         var toolbar = new Toolbar();
         var addButton = new ToolbarButton(() =>
         {
-            testGraphView.CreateNode(new Vector2(300, 200));
+            graphView.CreateNode(new Vector2(300, 200));
         });
         addButton.text = "Add Node";
         toolbar.Add(addButton);
@@ -56,21 +56,21 @@ public class GraphWindow : EditorWindow
         var split = new TwoPaneSplitView(1, 320, TwoPaneSplitViewOrientation.Horizontal);
 
         graphInspectorView = new GraphWindowInspectorView();
-        testGraphView = new TestGraphView(graph, graphInspectorView);
+        graphView = new FSMGraphView(graph, graphInspectorView);
 
-        graphInspectorView.OnNodeDataChanged = () => testGraphView.RefreshAllNodeViews();
+        graphInspectorView.OnNodeDataChanged = () => graphView.RefreshAllNodeViews();
 
-        split.Add(testGraphView);
+        split.Add(graphView);
         split.Add(graphInspectorView);
 
         root.Add(split);
         root.Add(BuildBlackboardPanel());
 
         ReBuildBlackboard();
-        testGraphView.BindSelection();
+        graphView.BindSelection();
 
         if (EditorApplication.isPlaying && !string.IsNullOrEmpty(FSMGraphRuntimeDebugger.ActiveNodeId))
-            testGraphView.SetActiveNode(FSMGraphRuntimeDebugger.ActiveNodeId);
+            graphView.SetActiveNode(FSMGraphRuntimeDebugger.ActiveNodeId);
     }
 
     VisualElement BuildBlackboardPanel()
@@ -357,14 +357,14 @@ public class GraphWindow : EditorWindow
 
     void OnActiveNodeChanged(string nodeId)
     {
-        testGraphView?.SetActiveNode(nodeId);
+        graphView?.SetActiveNode(nodeId);
     }
 
     void OnPlayModeStateChanged(PlayModeStateChange state)
     {
         if (state == PlayModeStateChange.EnteredEditMode)
         {
-            testGraphView?.ClearActiveNode();
+            graphView?.ClearActiveNode();
             FSMGraphRuntimeDebugger.ClearActiveNode();
 
             foreach (var agent in FindObjectsOfType<FSMAgent>())

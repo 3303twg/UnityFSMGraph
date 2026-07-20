@@ -10,7 +10,7 @@ using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 using static UnityEditor.Experimental.GraphView.GraphView;
 
-public class TestGraphView : GraphView
+public class FSMGraphView : GraphView
 {
     FSMGraphSo graphSo;
     GraphWindowInspectorView inspector;
@@ -19,7 +19,7 @@ public class TestGraphView : GraphView
     readonly Dictionary<string, NodeView> nodeViewsById = new Dictionary<string, NodeView>();
     string activeNodeId;
 
-    public TestGraphView(FSMGraphSo graphSo, GraphWindowInspectorView graphWindowInspectorView)
+    public FSMGraphView(FSMGraphSo graphSo, GraphWindowInspectorView graphWindowInspectorView)
     {
         this.graphSo = graphSo;
         inspector = graphWindowInspectorView;
