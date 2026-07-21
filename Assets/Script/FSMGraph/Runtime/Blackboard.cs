@@ -38,6 +38,7 @@ public class Blackboard : ISerializationCallbackReceiver
             throw new KeyNotFoundException();
 
         v.SetValue(value);
+        OnChanged?.Invoke();
     }
 
 
@@ -87,6 +88,8 @@ public class Blackboard : ISerializationCallbackReceiver
             if (v != null && !string.IsNullOrWhiteSpace(v.key))
                 lookUp[v.key] = v;
         }
+
+        OnChanged?.Invoke();
     }
 
     public static BlackboardVariable CreateVariable(Type type, string key)

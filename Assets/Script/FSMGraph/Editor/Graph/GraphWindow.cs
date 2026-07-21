@@ -9,6 +9,7 @@ public class GraphWindow : EditorWindow
 {
     private FSMGraphView graphView;
     private FSMGraphSo currentGraph;
+    private Blackboard activeBlackboard;
     private GraphWindowInspectorView graphInspectorView;
     VisualElement blackboardContentRoot;
     bool blackboardExpanded = true;
@@ -33,9 +34,17 @@ public class GraphWindow : EditorWindow
 
     void LoadGraph(FSMGraphSo graph)
     {
+        UnbindBlackboard();
+
         currentGraph = graph;
         if (currentGraph.blackboard == null)
             currentGraph.blackboard = new Blackboard();
+
+        activeBlackboard = null;
+        if (EditorApplication.isPlaying)
+            activeBlackboard = FindRuntimeBlackboard();
+
+        BindBlackboard();
 
         titleContent = new GUIContent(graph.name);
 
@@ -71,6 +80,34 @@ public class GraphWindow : EditorWindow
 
         if (EditorApplication.isPlaying && !string.IsNullOrEmpty(FSMGraphRuntimeDebugger.ActiveNodeId))
             graphView.SetActiveNode(FSMGraphRuntimeDebugger.ActiveNodeId);
+    }
+
+    Blackboard GetActiveBlackboard()
+    {
+        if (activeBlackboard != null)
+            return activeBlackboard;
+        return currentGraph?.blackboard;
+    }
+
+    void BindBlackboard()
+    {
+        var bb = GetActiveBlackboard();
+        if (bb != null)
+            bb.OnChanged += ReBuildBlackboard;
+    }
+
+    void UnbindBlackboard()
+    {
+        if (activeBlackboard != null)
+            activeBlackboard.OnChanged -= ReBuildBlackboard;
+        if (currentGraph?.blackboard != null)
+            currentGraph.blackboard.OnChanged -= ReBuildBlackboard;
+    }
+
+    void MarkGraphDirtyIfEditing()
+    {
+        if (!EditorApplication.isPlaying && currentGraph != null)
+            EditorUtility.SetDirty(currentGraph);
     }
 
     VisualElement BuildBlackboardPanel()
@@ -122,12 +159,18 @@ public class GraphWindow : EditorWindow
 
         var addButton = new Button(() =>
         {
+            if (EditorApplication.isPlaying)
+            {
+                Debug.LogWarning("Play Mode에서는 블랙보드 키 추가를 지원하지 않습니다.");
+                return;
+            }
+
             var provider = ScriptableObject.CreateInstance<TypeSearchProvider>();
             provider.Init(type =>
             {
                 string tempName = Guid.NewGuid().ToString();
-                currentGraph.blackboard.Add(Blackboard.CreateVariable(type, tempName));
-                EditorUtility.SetDirty(currentGraph);
+                GetActiveBlackboard().Add(Blackboard.CreateVariable(type, tempName));
+                MarkGraphDirtyIfEditing();
                 ReBuildBlackboard();
 
                 blackboardContentRoot.schedule.Execute(() =>
@@ -180,6 +223,9 @@ public class GraphWindow : EditorWindow
 
     void ReBuildBlackboard()
     {
+        if (blackboardContentRoot == null)
+            return;
+
         blackboardContentRoot.Clear();
         blackboardContentRoot.Add(BuildBlackboardFields());
     }
@@ -190,7 +236,14 @@ public class GraphWindow : EditorWindow
         section.style.flexDirection = FlexDirection.Column;
         section.style.width = Length.Percent(100);
 
-        foreach (var pair in currentGraph.blackboard.lookUp)
+        var blackboard = GetActiveBlackboard();
+        if (blackboard == null)
+        {
+            section.Add(new Label("Blackboard 없음"));
+            return section;
+        }
+
+        foreach (var pair in blackboard.lookUp)
         {
             string key = pair.Key;
             BlackboardVariable variable = pair.Value;
@@ -214,8 +267,8 @@ public class GraphWindow : EditorWindow
                     var field = new FloatField { value = floatVariable.value };
                     field.RegisterValueChangedCallback(evt =>
                     {
-                        currentGraph.blackboard.Set(key, evt.newValue);
-                        EditorUtility.SetDirty(currentGraph);
+                        GetActiveBlackboard().Set(key, evt.newValue);
+                        MarkGraphDirtyIfEditing();
                     });
                     valueField = field;
                     break;
@@ -226,8 +279,8 @@ public class GraphWindow : EditorWindow
                     toggle.style.marginLeft = 2;
                     toggle.RegisterValueChangedCallback(evt =>
                     {
-                        currentGraph.blackboard.Set(key, evt.newValue);
-                        EditorUtility.SetDirty(currentGraph);
+                        GetActiveBlackboard().Set(key, evt.newValue);
+                        MarkGraphDirtyIfEditing();
                     });
                     valueField = toggle;
                     break;
@@ -237,8 +290,8 @@ public class GraphWindow : EditorWindow
                     var field = new TextField { value = stringVariable.value ?? string.Empty };
                     field.RegisterValueChangedCallback(evt =>
                     {
-                        currentGraph.blackboard.Set(key, evt.newValue);
-                        EditorUtility.SetDirty(currentGraph);
+                        GetActiveBlackboard().Set(key, evt.newValue);
+                        MarkGraphDirtyIfEditing();
                     });
                     valueField = field;
                     break;
@@ -254,8 +307,8 @@ public class GraphWindow : EditorWindow
                     objectField.label = string.Empty;
                     objectField.RegisterValueChangedCallback(evt =>
                     {
-                        currentGraph.blackboard.Set(key, evt.newValue);
-                        EditorUtility.SetDirty(currentGraph);
+                        GetActiveBlackboard().Set(key, evt.newValue);
+                        MarkGraphDirtyIfEditing();
                     });
                     valueField = objectField;
                     break;
@@ -270,8 +323,14 @@ public class GraphWindow : EditorWindow
 
             var removeButton = new Button(() =>
             {
-                currentGraph.blackboard.Remove(key);
-                EditorUtility.SetDirty(currentGraph);
+                if (EditorApplication.isPlaying)
+                {
+                    Debug.LogWarning("Play Mode에서는 블랙보드 키 삭제를 지원하지 않습니다.");
+                    return;
+                }
+
+                GetActiveBlackboard().Remove(key);
+                MarkGraphDirtyIfEditing();
                 ReBuildBlackboard();
             })
             {
@@ -311,19 +370,26 @@ public class GraphWindow : EditorWindow
 
         void TryRename()
         {
+            if (EditorApplication.isPlaying)
+            {
+                keyField.SetValueWithoutNotify(key);
+                return;
+            }
+
             string newKey = keyField.value?.Trim();
             if (string.IsNullOrEmpty(newKey) || newKey == key)
                 return;
 
-            if (currentGraph.blackboard.lookUp.ContainsKey(newKey))
+            var blackboard = GetActiveBlackboard();
+            if (blackboard.lookUp.ContainsKey(newKey))
             {
                 Debug.LogWarning($"이미 존재하는 키: {newKey}");
                 keyField.SetValueWithoutNotify(key);
                 return;
             }
 
-            currentGraph.blackboard.Rename(key, newKey);
-            EditorUtility.SetDirty(currentGraph);
+            blackboard.Rename(key, newKey);
+            MarkGraphDirtyIfEditing();
             ReBuildBlackboard();
         }
 
@@ -351,6 +417,7 @@ public class GraphWindow : EditorWindow
 
     private void OnDisable()
     {
+        UnbindBlackboard();
         FSMGraphRuntimeDebugger.ActiveNodeChanged -= OnActiveNodeChanged;
         EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
     }
@@ -376,5 +443,47 @@ public class GraphWindow : EditorWindow
         {
             graphInspectorView?.RebuildNodeInspector();
         }
+
+        if (currentGraph == null)
+            return;
+
+        if (state == PlayModeStateChange.EnteredPlayMode)
+        {
+            UnbindBlackboard();
+            activeBlackboard = null;
+
+            // Agent Awake/Init보다 먼저 올 수 있어서 한 프레임 뒤 재탐색
+            EditorApplication.delayCall += () =>
+            {
+                if (!EditorApplication.isPlaying || currentGraph == null)
+                    return;
+
+                UnbindBlackboard();
+                activeBlackboard = FindRuntimeBlackboard();
+                BindBlackboard();
+                ReBuildBlackboard();
+            };
+        }
+        else if (state == PlayModeStateChange.EnteredEditMode)
+        {
+            UnbindBlackboard();
+            activeBlackboard = null; // SO 템플릿으로 복귀 (SO 필드는 건드리지 않음)
+            BindBlackboard();
+            ReBuildBlackboard();
+        }
+    }
+
+    Blackboard FindRuntimeBlackboard()
+    {
+        if (!EditorApplication.isPlaying || currentGraph == null)
+            return null;
+
+        foreach (var agent in FindObjectsOfType<FSMAgent>())
+        {
+            if (agent.graphSo == currentGraph)
+                return agent.GraphRuntime?.blackboard;
+        }
+
+        return null;
     }
 }

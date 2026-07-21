@@ -9,7 +9,6 @@ public class FSMAgent : MonoBehaviour, IFSMAgent
     public Transform transform => this.transform;
     public BaseStat baseStat { get; set; }
     
-    [SerializeField]
     public FSMGraphRuntime GraphRuntime { get; set; }
 
     [SerializeReference]

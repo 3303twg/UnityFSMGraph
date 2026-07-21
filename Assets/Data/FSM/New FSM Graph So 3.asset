@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d438543a04bc9684db9379c8fb8165ee, type: 3}
+  m_Name: New FSM Graph So 3
+  m_EditorClassIdentifier: 
+  entryNodeId: entryNode
+  id: 
+  nodes:
+  - id: entryNode
+    nodeType: 0
+    title: Entry
+    position: {x: 80, y: 200}
+    stateSo: {fileID: 0}
+    referenceTargetId: 
+  edges: []
+  blackboard:
+    variables:
+    - rid: 2619747438786248783
+    - rid: 2619747438786248784
+    - rid: 2619747438786248785
+    - rid: 2619747438786248786
+    - rid: 2619747438786248787
+    - rid: 2619747438786248788
+    - rid: 2619747438786248789
+  references:
+    version: 2
+    RefIds:
+    - rid: 2619747438786248783
+      type: {class: StringVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: e750f05b-0dbb-416f-9a0c-e1ae4953cbe4
+        value: 
+    - rid: 2619747438786248784
+      type: {class: FloatVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: f665ee12-1014-4bca-a602-d39f3e622d86
+        value: 0
+    - rid: 2619747438786248785
+      type: {class: FloatVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: c57c693d-5f03-4ec0-ab6d-b00afad6d8f6
+        value: 0
+    - rid: 2619747438786248786
+      type: {class: FloatVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: 814484fd-b122-4a22-ac5b-4c7a369bc761
+        value: 0
+    - rid: 2619747438786248787
+      type: {class: FloatVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: 415f16c0-2ca1-4498-912a-7d9bbf0e09f4
+        value: 0
+    - rid: 2619747438786248788
+      type: {class: FloatVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: 94080c48-4302-4d70-a5d3-bdac00d6a6ce
+        value: 0
+    - rid: 2619747438786248789
+      type: {class: FloatVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: 5a742cb8-8fff-4e96-9275-bf5dc8f0600d
+        value: 0
