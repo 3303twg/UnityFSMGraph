@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "FSM/Graph")]
@@ -19,7 +18,17 @@ public class FSMGraphSo : ScriptableObject
 
 
     //이건 좀 수정하든가 해야겠다
-    public NodeData GetNode(string id) => nodes.FirstOrDefault(n => n.id == id);
+    public NodeData GetNode(string id)
+    {
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            NodeData node = nodes[i];
+            if (node.id == id)
+                return node;
+        }
+
+        return null;
+    }
     public NodeData EntryNode => string.IsNullOrEmpty(entryNodeId) ? null : GetNode(entryNodeId);
 
     public void EnsureEntryNode()

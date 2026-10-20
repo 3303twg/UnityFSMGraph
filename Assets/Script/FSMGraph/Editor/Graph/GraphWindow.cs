@@ -361,7 +361,7 @@ public class GraphWindow : EditorWindow
                     var field = new FloatField { value = floatVariable.value };
                     field.RegisterValueChangedCallback(evt =>
                     {
-                        GetActiveBlackboard().Set(key, evt.newValue);
+                        GetActiveBlackboard().Set(key, evt.newValue, false);
                         MarkGraphDirtyIfEditing();
                     });
                     valueField = field;
@@ -373,7 +373,7 @@ public class GraphWindow : EditorWindow
                     toggle.style.marginLeft = 2;
                     toggle.RegisterValueChangedCallback(evt =>
                     {
-                        GetActiveBlackboard().Set(key, evt.newValue);
+                        GetActiveBlackboard().Set(key, evt.newValue, false);
                         MarkGraphDirtyIfEditing();
                     });
                     valueField = toggle;
@@ -384,7 +384,7 @@ public class GraphWindow : EditorWindow
                     var field = new TextField { value = stringVariable.value ?? string.Empty };
                     field.RegisterValueChangedCallback(evt =>
                     {
-                        GetActiveBlackboard().Set(key, evt.newValue);
+                        GetActiveBlackboard().Set(key, evt.newValue, false);
                         MarkGraphDirtyIfEditing();
                     });
                     valueField = field;
@@ -401,7 +401,7 @@ public class GraphWindow : EditorWindow
                     objectField.label = string.Empty;
                     objectField.RegisterValueChangedCallback(evt =>
                     {
-                        GetActiveBlackboard().Set(key, evt.newValue);
+                        GetActiveBlackboard().Set(key, evt.newValue, false);
                         MarkGraphDirtyIfEditing();
                     });
                     valueField = objectField;

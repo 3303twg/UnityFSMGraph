@@ -32,13 +32,165 @@ public class Blackboard : ISerializationCallbackReceiver
         return false;
     }
 
-    public void Set(string key, object value)
+    public bool TryGetFloat(string key, out float value)
+    {
+        if (lookUp.TryGetValue(key, out var variable) && variable is FloatVariable floatVariable)
+        {
+            value = floatVariable.value;
+            return true;
+        }
+
+        value = 0f;
+        return false;
+    }
+
+    public bool Compare(string key, CompareOperatorType op, float rightNumber, string rightText, bool rightBool)
+    {
+        if (!lookUp.TryGetValue(key, out var variable) || variable == null)
+            return false;
+
+        switch (variable)
+        {
+            case FloatVariable floatVariable:
+                return CompareFloat(op, floatVariable.value, rightNumber);
+            case StringVariable stringVariable:
+                return CompareString(op, stringVariable.value, rightText);
+            case BoolVariable boolVariable:
+                return CompareBool(op, boolVariable.value, rightBool);
+            default:
+                return false;
+        }
+    }
+
+    static bool CompareFloat(CompareOperatorType op, float left, float right)
+    {
+        switch (op)
+        {
+            case CompareOperatorType.Equal:
+                return left == right;
+            case CompareOperatorType.NotEqual:
+                return left != right;
+            case CompareOperatorType.Greater:
+                return left > right;
+            case CompareOperatorType.Less:
+                return left < right;
+            case CompareOperatorType.GreaterOrEqual:
+                return left >= right;
+            case CompareOperatorType.LessOrEqual:
+                return left <= right;
+            default:
+                return false;
+        }
+    }
+
+    static bool CompareString(CompareOperatorType op, string left, string right)
+    {
+        int cmp = string.CompareOrdinal(left, right);
+        switch (op)
+        {
+            case CompareOperatorType.Equal:
+                return cmp == 0;
+            case CompareOperatorType.NotEqual:
+                return cmp != 0;
+            case CompareOperatorType.Greater:
+                return cmp > 0;
+            case CompareOperatorType.Less:
+                return cmp < 0;
+            case CompareOperatorType.GreaterOrEqual:
+                return cmp >= 0;
+            case CompareOperatorType.LessOrEqual:
+                return cmp <= 0;
+            default:
+                return false;
+        }
+    }
+
+    static bool CompareBool(CompareOperatorType op, bool left, bool right)
+    {
+        switch (op)
+        {
+            case CompareOperatorType.Equal:
+                return left == right;
+            case CompareOperatorType.NotEqual:
+                return left != right;
+            case CompareOperatorType.Greater:
+                return left && !right;
+            case CompareOperatorType.Less:
+                return !left && right;
+            case CompareOperatorType.GreaterOrEqual:
+                return left == right || left;
+            case CompareOperatorType.LessOrEqual:
+                return left == right || !left;
+            default:
+                return false;
+        }
+    }
+
+    public void Set(string key, object value, bool notify = true)
     {
         if (!lookUp.TryGetValue(key, out var v))
             throw new KeyNotFoundException();
 
-        v.SetValue(value);
-        OnChanged?.Invoke();
+        switch (v)
+        {
+            case FloatVariable floatVariable when value is float floatValue:
+                floatVariable.value = floatValue;
+                break;
+            case BoolVariable boolVariable when value is bool boolValue:
+                boolVariable.value = boolValue;
+                break;
+            case StringVariable stringVariable when value is string stringValue:
+                stringVariable.value = stringValue;
+                break;
+            case StringVariable stringVariable when value == null:
+                stringVariable.value = string.Empty;
+                break;
+            case GameObjectVariable gameObjectVariable:
+                gameObjectVariable.value = value as GameObject;
+                break;
+            default:
+                v.SetValue(value);
+                break;
+        }
+
+        if (notify)
+            OnChanged?.Invoke();
+    }
+
+    public void Set(string key, float value, bool notify = true)
+    {
+        if (!lookUp.TryGetValue(key, out var variable))
+            throw new KeyNotFoundException();
+        if (variable is not FloatVariable floatVariable)
+            throw new InvalidCastException(variable.GetType().Name);
+
+        floatVariable.value = value;
+        if (notify)
+            OnChanged?.Invoke();
+    }
+
+    public void Set(string key, bool value, bool notify = true)
+    {
+        if (!lookUp.TryGetValue(key, out var variable))
+            throw new KeyNotFoundException();
+        if (variable is not BoolVariable boolVariable)
+            throw new InvalidCastException(variable.GetType().Name);
+
+        boolVariable.value = value;
+        if (notify)
+            OnChanged?.Invoke();
+    }
+
+    public void Set(string key, string value, bool notify = true)
+    {
+        if (!lookUp.TryGetValue(key, out var variable))
+            throw new KeyNotFoundException();
+        if (variable is not StringVariable stringVariable)
+            throw new InvalidCastException(variable.GetType().Name);
+
+        stringVariable.value = value;
+        if (notify)
+            OnChanged?.Invoke();
     }
 
 
@@ -168,7 +320,7 @@ public sealed class FloatVariable : BlackboardVariable
     public float value;
 
     public override object GetValue() => value;
-    public override void SetValue(object v) => value = Convert.ToSingle(v);
+    public override void SetValue(object v) => value = v is float floatValue ? floatValue : Convert.ToSingle(v);
 }
 
 [Serializable]
@@ -177,7 +329,7 @@ public sealed class BoolVariable : BlackboardVariable
     public bool value;
 
     public override object GetValue() => value;
-    public override void SetValue(object v) => value = Convert.ToBoolean(v);
+    public override void SetValue(object v) => value = v is bool boolValue ? boolValue : Convert.ToBoolean(v);
 }
 
 [Serializable]

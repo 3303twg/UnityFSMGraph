@@ -9,4 +9,6 @@ public class MonitorStateSo : BaseStateSo<MonitorState>
     public CompareOperatorType compareOperator;
     public string leftKey;
     public float rightKey;
+    public string rightString;
+    public bool rightBool;
 }

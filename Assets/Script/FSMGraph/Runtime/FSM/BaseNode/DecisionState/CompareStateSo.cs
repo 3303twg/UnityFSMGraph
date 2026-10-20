@@ -7,7 +7,8 @@ public class CompareStateSo : BaseStateSo<CompareState>
 {
     public CompareOperatorType compareOperator;
     public string leftKey;
-    //public BlackboardKey rightKey;
     public float rightKey;
+    public string rightString;
+    public bool rightBool;
     
 }

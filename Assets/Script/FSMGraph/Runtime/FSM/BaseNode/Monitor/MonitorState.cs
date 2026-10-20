@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MonitorState : BaseState, IFSMMonitor
@@ -10,8 +7,8 @@ public class MonitorState : BaseState, IFSMMonitor
     public CompareOperatorType compareOperator;
     public string leftKey;
     public float rightKey;
-    [NonSerialized] object left;
-    [NonSerialized] object right;
+    public string rightString;
+    public bool rightBool;
     public string nodeId { get; set; }
     public bool isUsed = false;
 
@@ -21,6 +18,8 @@ public class MonitorState : BaseState, IFSMMonitor
         compareOperator = data.compareOperator;
         leftKey = data.leftKey;
         rightKey = data.rightKey;
+        rightString = data.rightString;
+        rightBool = data.rightBool;
     }
 
 
@@ -30,7 +29,8 @@ public class MonitorState : BaseState, IFSMMonitor
     }
     public override void Update()
     {
-        hit = Compare(agent.GraphRuntime.blackboard.Get(leftKey), (object)rightKey);
+        hit = agent.GraphRuntime.blackboard.Compare(
+            leftKey, compareOperator, rightKey, rightString, rightBool);
         if (isUsed)
         {
             if (!hit)
@@ -49,24 +49,4 @@ public class MonitorState : BaseState, IFSMMonitor
 
     }
 
-    public bool Compare(object left, object right)
-    {
-        switch (compareOperator)
-        {
-            case CompareOperatorType.Equal:
-                return Equals(left, right);
-            case CompareOperatorType.NotEqual:
-                return !Equals(left, right);
-            case CompareOperatorType.Greater:
-                return Comparer<object>.Default.Compare(left, right) > 0;
-            case CompareOperatorType.Less:
-                return Comparer<object>.Default.Compare(left, right) < 0;
-            case CompareOperatorType.GreaterOrEqual:
-                return Comparer<object>.Default.Compare(left, right) >= 0;
-            case CompareOperatorType.LessOrEqual:
-                return Comparer<object>.Default.Compare(left, right) <= 0;
-        }
-
-        return false;
-    }
 }
