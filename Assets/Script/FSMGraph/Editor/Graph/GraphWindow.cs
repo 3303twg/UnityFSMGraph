@@ -9,9 +9,12 @@ public class GraphWindow : EditorWindow
 {
     private FSMGraphView graphView;
     private FSMGraphSo currentGraph;
+    [SerializeField] FSMAgent boundAgent;
     private Blackboard activeBlackboard;
     private GraphWindowInspectorView graphInspectorView;
     VisualElement blackboardContentRoot;
+    ObjectField contextAgentField;
+    bool syncingSelection;
     bool blackboardExpanded = true;
     Vector2 blackboardPanelOffset = new Vector2(8f, 8f);
     Vector3 blackboardDragStartPointer;
@@ -20,6 +23,13 @@ public class GraphWindow : EditorWindow
     [MenuItem("Tool/GraphView")]
     static void OpenFromMenu()
     {
+        FSMAgent agent = FindAgentOnSelection();
+        if (agent != null && agent.graphSo != null)
+        {
+            Open(agent.graphSo, agent);
+            return;
+        }
+
         var graph = Selection.activeObject as FSMGraphSo;
         if (graph != null)
             Open(graph);
@@ -27,12 +37,58 @@ public class GraphWindow : EditorWindow
             GetWindow<GraphWindow>();
     }
 
-    public static void Open(FSMGraphSo graph)
+    public static void Open(FSMGraphSo graph, FSMAgent agent = null)
     {
         if (graph == null) return;
 
         var wnd = GetWindow<GraphWindow>();
+        wnd.boundAgent = agent;
         wnd.LoadGraph(graph);
+    }
+
+    static FSMAgent FindAgentOnSelection()
+    {
+        var selectedObject = Selection.activeGameObject;
+        if (selectedObject == null)
+            return null;
+
+        Transform current = selectedObject.transform;
+        while (current != null)
+        {
+            var agent = current.GetComponent<FSMAgent>();
+            if (agent != null)
+                return agent;
+            current = current.parent;
+        }
+
+        var components = selectedObject.GetComponents<Component>();
+        for (int i = 0; i < components.Length; i++)
+        {
+            FSMAgent referenced = FindDirectAgentReference(components[i]);
+            if (referenced != null)
+                return referenced;
+        }
+
+        return null;
+    }
+
+    internal static FSMAgent FindDirectAgentReference(Component component)
+    {
+        if (component == null || component is FSMAgent)
+            return null;
+
+        var serialized = new SerializedObject(component);
+        SerializedProperty property = serialized.GetIterator();
+        bool enterChildren = true;
+        while (property.NextVisible(enterChildren))
+        {
+            enterChildren = false;
+            if (property.propertyType == SerializedPropertyType.ObjectReference &&
+                property.objectReferenceValue is FSMAgent referenced)
+                return referenced;
+        }
+
+        return null;
     }
 
     void LoadGraph(FSMGraphSo graph)
@@ -49,25 +105,19 @@ public class GraphWindow : EditorWindow
 
         BindBlackboard();
 
-        titleContent = new GUIContent(graph.name);
+        UpdateWindowTitle();
 
         rootVisualElement.Clear();
 
         VisualElement root = new VisualElement { style = { flexGrow = 1 } };
         rootVisualElement.Add(root);
 
-        var toolbar = new Toolbar();
-        var addButton = new ToolbarButton(() =>
-        {
-            graphView.CreateNode(new Vector2(300, 200));
-        });
-        addButton.text = "Add Node";
-        toolbar.Add(addButton);
-        rootVisualElement.Insert(0, toolbar);
+        rootVisualElement.Insert(0, BuildToolbar());
 
         var split = new TwoPaneSplitView(1, 320, TwoPaneSplitViewOrientation.Horizontal);
 
         graphInspectorView = new GraphWindowInspectorView();
+        graphInspectorView.ContextAgent = boundAgent;
         graphView = new FSMGraphView(graph, graphInspectorView);
 
         graphInspectorView.OnNodeDataChanged = () => graphView.RefreshAllNodeViews();
@@ -81,8 +131,85 @@ public class GraphWindow : EditorWindow
         ReBuildBlackboard();
         graphView.BindSelection();
 
-        if (EditorApplication.isPlaying && !string.IsNullOrEmpty(FSMGraphRuntimeDebugger.ActiveNodeId))
-            graphView.SetActiveNode(FSMGraphRuntimeDebugger.ActiveNodeId);
+        if (EditorApplication.isPlaying && boundAgent != null)
+            graphView.SetActiveNode(boundAgent.GraphRuntime?.CurrentNodeId);
+    }
+
+    Toolbar BuildToolbar()
+    {
+        var toolbar = new Toolbar();
+        var addButton = new ToolbarButton(() =>
+        {
+            graphView.CreateNode(new Vector2(300, 200));
+        });
+        addButton.text = "Add Node";
+        toolbar.Add(addButton);
+
+        contextAgentField = new ObjectField("기준")
+        {
+            objectType = typeof(FSMAgent),
+            allowSceneObjects = true,
+            value = boundAgent
+        };
+        var agentField = contextAgentField;
+        agentField.style.width = 280;
+        agentField.style.marginLeft = 8;
+        agentField.RegisterValueChangedCallback(evt =>
+        {
+            var next = evt.newValue as FSMAgent;
+            if (next == boundAgent)
+                return;
+
+            if (next != null && next.graphSo == null)
+            {
+                agentField.SetValueWithoutNotify(boundAgent);
+                Debug.LogWarning("이 에이전트에는 그래프가 없습니다.");
+                return;
+            }
+
+            if (next != null && next.graphSo != currentGraph)
+            {
+                boundAgent = next;
+                LoadGraph(next.graphSo);
+                return;
+            }
+
+            ApplyContextAgent(next);
+        });
+        toolbar.Add(agentField);
+        return toolbar;
+    }
+
+    void ApplyContextAgent(FSMAgent agent)
+    {
+        boundAgent = agent;
+        UnbindBlackboard();
+        activeBlackboard = EditorApplication.isPlaying ? FindRuntimeBlackboard() : null;
+        BindBlackboard();
+        ReBuildBlackboard();
+        UpdateWindowTitle();
+
+        contextAgentField?.SetValueWithoutNotify(boundAgent);
+
+        if (graphInspectorView != null)
+        {
+            graphInspectorView.ContextAgent = boundAgent;
+            graphInspectorView.RebuildNodeInspector();
+        }
+
+        if (EditorApplication.isPlaying && boundAgent != null)
+            graphView?.SetActiveNode(boundAgent.GraphRuntime?.CurrentNodeId);
+        else
+            graphView?.ClearActiveNode();
+    }
+
+    void UpdateWindowTitle()
+    {
+        if (currentGraph == null)
+            return;
+
+        string agentName = boundAgent != null ? boundAgent.name : "기준 없음";
+        titleContent = new GUIContent($"{currentGraph.name} ({agentName})");
     }
 
     Blackboard GetActiveBlackboard()
@@ -504,6 +631,7 @@ public class GraphWindow : EditorWindow
     {
         FSMGraphRuntimeDebugger.ActiveNodeChanged += OnActiveNodeChanged;
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        Selection.selectionChanged += OnEditorSelectionChanged;
 
         if (currentGraph != null)
             LoadGraph(currentGraph);
@@ -514,10 +642,43 @@ public class GraphWindow : EditorWindow
         UnbindBlackboard();
         FSMGraphRuntimeDebugger.ActiveNodeChanged -= OnActiveNodeChanged;
         EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+        Selection.selectionChanged -= OnEditorSelectionChanged;
     }
 
-    void OnActiveNodeChanged(string nodeId)
+    void OnEditorSelectionChanged()
     {
+        if (syncingSelection)
+            return;
+
+        FSMAgent agent = FindAgentOnSelection();
+        if (agent == null || agent.graphSo == null)
+            return;
+
+        if (agent == boundAgent && agent.graphSo == currentGraph)
+            return;
+
+        syncingSelection = true;
+        try
+        {
+            if (agent.graphSo != currentGraph)
+            {
+                boundAgent = agent;
+                LoadGraph(agent.graphSo);
+            }
+            else
+                ApplyContextAgent(agent);
+        }
+        finally
+        {
+            syncingSelection = false;
+        }
+    }
+
+    void OnActiveNodeChanged(UnityEngine.Object owner, string nodeId)
+    {
+        if (boundAgent == null || owner != boundAgent)
+            return;
+
         graphView?.SetActiveNode(nodeId);
     }
 
@@ -556,6 +717,9 @@ public class GraphWindow : EditorWindow
                 activeBlackboard = FindRuntimeBlackboard();
                 BindBlackboard();
                 ReBuildBlackboard();
+                graphInspectorView?.RebuildNodeInspector();
+                if (boundAgent != null)
+                    graphView?.SetActiveNode(boundAgent.GraphRuntime?.CurrentNodeId);
             };
         }
         else if (state == PlayModeStateChange.EnteredEditMode)
@@ -569,15 +733,12 @@ public class GraphWindow : EditorWindow
 
     Blackboard FindRuntimeBlackboard()
     {
-        if (!EditorApplication.isPlaying || currentGraph == null)
+        if (!EditorApplication.isPlaying || currentGraph == null || boundAgent == null)
             return null;
 
-        foreach (var agent in FindObjectsOfType<FSMAgent>())
-        {
-            if (agent.graphSo == currentGraph)
-                return agent.GraphRuntime?.blackboard;
-        }
+        if (boundAgent.graphSo != currentGraph)
+            return null;
 
-        return null;
+        return boundAgent.GraphRuntime?.blackboard;
     }
 }

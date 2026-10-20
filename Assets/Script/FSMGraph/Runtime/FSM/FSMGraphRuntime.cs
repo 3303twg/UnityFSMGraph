@@ -116,7 +116,7 @@ public class FSMGraphRuntime : IFSMNavigator
 
         CurrentNodeId = nodeId;
         stateMachine.ChangeState(nextState);
-        FSMGraphRuntimeDebugger.SetActiveNode(CurrentNodeId);
+        FSMGraphRuntimeDebugger.SetActiveNode(agent as UnityEngine.Object, CurrentNodeId);
     }
 
     public void GoToPort(PortType portType)

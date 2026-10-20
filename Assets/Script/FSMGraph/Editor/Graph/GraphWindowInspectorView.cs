@@ -16,6 +16,7 @@ public class GraphWindowInspectorView : VisualElement
     EdgeData boundEdge;
     FSMGraphSo graphDataSo;
 
+    public FSMAgent ContextAgent { get; set; }
     FSMAgent boundController;
     SerializedObject boundControllerSo;
     VisualElement runtimeStateInspector;
@@ -152,12 +153,14 @@ public class GraphWindowInspectorView : VisualElement
     {
         root.Add(new Label($"Title: {node.title}"));
 
-        boundController = FindController(graphDataSo);
-        if (boundController == null)
+        boundController = ContextAgent;
+        if (boundController == null || boundController.graphSo != graphDataSo)
         {
-            root.Add(new Label("이 그래프를 실행 중인 EnemyController가 없습니다."));
+            root.Add(new Label("기준 에이전트가 없습니다. 툴바에서 에이전트를 지정하세요."));
             return;
         }
+
+        root.Add(new Label("기준: " + boundController.name));
 
         //BuildBlackboardFields(boundController);
 
@@ -261,20 +264,6 @@ public class GraphWindowInspectorView : VisualElement
         boundController = null;
         boundControllerSo = null;
         runtimeStateInspector = null;
-    }
-
-    static FSMAgent FindController(FSMGraphSo graph)
-    {
-        if (graph == null) return null;
-
-        var controllers = UnityEngine.Object.FindObjectsOfType<FSMAgent>();
-        foreach (var controller in controllers)
-        {
-            if (controller.graphSo == graph)
-                return controller;
-        }
-
-        return null;
     }
 
     public void RebuildEdgeInspector()

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 
 //이건 에디터만 하게 하지 않을까?
@@ -6,15 +7,12 @@ public static class FSMGraphRuntimeDebugger
 {
     public static string ActiveNodeId { get; private set; }
 
-    public static event Action<string> ActiveNodeChanged;
+    public static event Action<UnityEngine.Object, string> ActiveNodeChanged;
 
-    public static void SetActiveNode(string nodeId)
+    public static void SetActiveNode(UnityEngine.Object owner, string nodeId)
     {
-        if (ActiveNodeId == nodeId)
-            return;
-
         ActiveNodeId = nodeId;
-        ActiveNodeChanged?.Invoke(nodeId);
+        ActiveNodeChanged?.Invoke(owner, nodeId);
     }
 
     public static void ClearActiveNode()
@@ -23,6 +21,6 @@ public static class FSMGraphRuntimeDebugger
             return;
 
         ActiveNodeId = null;
-        ActiveNodeChanged?.Invoke(null);
+        ActiveNodeChanged?.Invoke(null, null);
     }
 }
