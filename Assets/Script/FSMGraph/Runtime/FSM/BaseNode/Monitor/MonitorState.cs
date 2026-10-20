@@ -25,9 +25,10 @@ public class MonitorState : BaseState, IFSMMonitor
 
     public void Init()
     {
-        //필요한가?
+        agent.GraphRuntime.blackboard.OnChanged += Compare;
     }
-    public override void Update()
+
+    public void Compare()
     {
         hit = agent.GraphRuntime.blackboard.Compare(
             leftKey, compareOperator, rightKey, rightString, rightBool);
@@ -46,7 +47,7 @@ public class MonitorState : BaseState, IFSMMonitor
             agent.Navigator.GoToPortFrom(nodeId, PortType.Output);
 
         }
-
     }
+
 
 }

@@ -25,7 +25,7 @@ public class GraphWindowInspectorView : VisualElement
 
     public GraphWindowInspectorView()
     {
-        style.minWidth = 280;
+        style.minWidth = 180;
         style.paddingLeft = 8;
         style.paddingRight = 8;
         style.paddingTop = 8;

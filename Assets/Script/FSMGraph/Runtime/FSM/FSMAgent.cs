@@ -32,9 +32,5 @@ public class FSMAgent : MonoBehaviour, IFSMAgent
     void Update()
     {
         stateMachine?.Update();
-        foreach (var monitor in GraphRuntime.monitorList)
-        {
-            monitor?.Update();
-        }
     }
 }

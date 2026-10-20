@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
@@ -17,6 +18,9 @@ public class GraphWindow : EditorWindow
     bool syncingSelection;
     bool blackboardExpanded = true;
     Vector2 blackboardPanelOffset = new Vector2(8f, 8f);
+    Vector2 blackboardPanelSize = new Vector2(320f, 360f);
+    const float BlackboardMinWidth = 200f;
+    const float BlackboardMinHeight = 140f;
     Vector3 blackboardDragStartPointer;
     Vector2 blackboardDragStartOffset;
 
@@ -114,7 +118,7 @@ public class GraphWindow : EditorWindow
 
         rootVisualElement.Insert(0, BuildToolbar());
 
-        var split = new TwoPaneSplitView(1, 320, TwoPaneSplitViewOrientation.Horizontal);
+        var split = new TwoPaneSplitView(1, 220, TwoPaneSplitViewOrientation.Horizontal);
 
         graphInspectorView = new GraphWindowInspectorView();
         graphInspectorView.ContextAgent = boundAgent;
@@ -246,8 +250,9 @@ public class GraphWindow : EditorWindow
         panel.style.position = Position.Absolute;
         panel.style.top = blackboardPanelOffset.y;
         panel.style.left = blackboardPanelOffset.x;
-        panel.style.width = 320;
-        panel.style.maxHeight = 540;
+        panel.style.width = blackboardPanelSize.x;
+        panel.style.flexDirection = FlexDirection.Column;
+        panel.style.overflow = Overflow.Hidden;
         panel.style.backgroundColor = new Color(0.15f, 0.15f, 0.17f, 0.95f);
         panel.style.paddingTop = 8;
         panel.style.paddingBottom = 8;
@@ -291,8 +296,8 @@ public class GraphWindow : EditorWindow
 
         var scroll = new ScrollView();
         scroll.style.flexGrow = 1;
-        scroll.style.minHeight = 120;
-        scroll.style.maxHeight = 540;
+        scroll.style.flexShrink = 1;
+        scroll.style.minHeight = 0;
         scroll.Add(blackboardContentRoot);
 
         var addButton = new Button(() =>
@@ -335,20 +340,188 @@ public class GraphWindow : EditorWindow
         foldButton.style.flexShrink = 0;
         foldButton.style.marginLeft = 4;
         foldButton.style.unityTextAlign = TextAnchor.MiddleCenter;
-        foldButton.clicked += () =>
-        {
-            blackboardExpanded = !blackboardExpanded;
-            ApplyBlackboardFold(panel, foldButton, scroll, addButton);
-        };
         header.Add(foldButton);
+
+        var resizeRight = CreateBlackboardResizeHandle(panel, BlackboardResizeAxis.Horizontal);
+        var resizeBottom = CreateBlackboardResizeHandle(panel, BlackboardResizeAxis.Vertical);
+        var resizeCorner = CreateBlackboardResizeHandle(panel, BlackboardResizeAxis.Both);
 
         panel.Add(header);
         panel.Add(scroll);
         panel.Add(addButton);
+        panel.Add(resizeRight);
+        panel.Add(resizeBottom);
+        panel.Add(resizeCorner);
+
+        foldButton.clicked += () =>
+        {
+            blackboardExpanded = !blackboardExpanded;
+            ApplyBlackboardFold(panel, foldButton, scroll, addButton, resizeRight, resizeBottom, resizeCorner);
+        };
 
         EnableBlackboardDrag(panel, header, foldButton);
-        ApplyBlackboardFold(panel, foldButton, scroll, addButton);
+        ApplyBlackboardFold(panel, foldButton, scroll, addButton, resizeRight, resizeBottom, resizeCorner);
         return panel;
+    }
+
+    enum BlackboardResizeAxis
+    {
+        Horizontal,
+        Vertical,
+        Both
+    }
+
+    VisualElement CreateBlackboardResizeHandle(VisualElement panel, BlackboardResizeAxis axis)
+    {
+        var handle = new VisualElement();
+        handle.style.position = Position.Absolute;
+        handle.style.backgroundColor = Color.clear;
+
+        if (axis == BlackboardResizeAxis.Horizontal)
+        {
+            handle.style.top = 0;
+            handle.style.right = 0;
+            handle.style.bottom = 14;
+            handle.style.width = 6;
+        }
+        else if (axis == BlackboardResizeAxis.Vertical)
+        {
+            handle.style.left = 0;
+            handle.style.right = 14;
+            handle.style.bottom = 0;
+            handle.style.height = 6;
+        }
+        else
+        {
+            handle.style.right = 0;
+            handle.style.bottom = 0;
+            handle.style.width = 14;
+            handle.style.height = 14;
+        }
+
+        handle.style.cursor = CreateEditorCursor(ResizeMouseCursor(axis));
+        EnableBlackboardResize(panel, handle, axis);
+        return handle;
+    }
+
+    static readonly PropertyInfo CursorIdProperty =
+        typeof(UnityEngine.UIElements.Cursor).GetProperty(
+            "defaultCursorId",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+    static UnityEngine.UIElements.Cursor CreateEditorCursor(MouseCursor cursor)
+    {
+        object boxed = new UnityEngine.UIElements.Cursor();
+        if (CursorIdProperty != null)
+            CursorIdProperty.SetValue(boxed, (int)cursor);
+        else
+        {
+            FieldInfo field = typeof(UnityEngine.UIElements.Cursor).GetField(
+                "<defaultCursorId>k__BackingField",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            field?.SetValue(boxed, (int)cursor);
+        }
+
+        return (UnityEngine.UIElements.Cursor)boxed;
+    }
+
+    static MouseCursor ResizeMouseCursor(BlackboardResizeAxis axis)
+    {
+        switch (axis)
+        {
+            case BlackboardResizeAxis.Horizontal:
+                return MouseCursor.ResizeHorizontal;
+            case BlackboardResizeAxis.Vertical:
+                return MouseCursor.ResizeVertical;
+            default:
+                return MouseCursor.ResizeUpLeft;
+        }
+    }
+
+    void EnableBlackboardResize(VisualElement panel, VisualElement handle, BlackboardResizeAxis axis)
+    {
+        Vector3 startPointer = default;
+        Vector2 startSize = default;
+
+        handle.RegisterCallback<PointerDownEvent>(evt =>
+        {
+            if (evt.button != (int)MouseButton.LeftMouse || !blackboardExpanded)
+                return;
+
+            float width = panel.resolvedStyle.width;
+            float height = panel.resolvedStyle.height;
+            if (float.IsNaN(width))
+                width = blackboardPanelSize.x;
+            if (float.IsNaN(height))
+                height = blackboardPanelSize.y;
+
+            startPointer = evt.position;
+            startSize = new Vector2(width, height);
+            handle.CapturePointer(evt.pointerId);
+            evt.StopPropagation();
+        });
+
+        handle.RegisterCallback<PointerMoveEvent>(evt =>
+        {
+            if (!handle.HasPointerCapture(evt.pointerId))
+                return;
+
+            Vector2 delta = (Vector2)(evt.position - startPointer);
+            Vector2 size = startSize;
+            if (axis != BlackboardResizeAxis.Vertical)
+                size.x += delta.x;
+            if (axis != BlackboardResizeAxis.Horizontal)
+                size.y += delta.y;
+
+            ApplyBlackboardSize(panel, size);
+            evt.StopPropagation();
+        });
+
+        handle.RegisterCallback<PointerUpEvent>(evt =>
+        {
+            if (!handle.HasPointerCapture(evt.pointerId))
+                return;
+
+            handle.ReleasePointer(evt.pointerId);
+            evt.StopPropagation();
+        });
+    }
+
+    void ApplyBlackboardSize(VisualElement panel, Vector2 size)
+    {
+        float maxWidth = 4000f;
+        float maxHeight = 4000f;
+        var parent = panel.parent;
+        if (parent != null)
+        {
+            float parentWidth = parent.resolvedStyle.width;
+            float parentHeight = parent.resolvedStyle.height;
+            if (!float.IsNaN(parentWidth))
+                maxWidth = parentWidth - blackboardPanelOffset.x;
+            if (!float.IsNaN(parentHeight))
+                maxHeight = parentHeight - blackboardPanelOffset.y;
+        }
+
+        size.x = Mathf.Clamp(size.x, BlackboardMinWidth, Mathf.Max(BlackboardMinWidth, maxWidth));
+        size.y = Mathf.Clamp(size.y, BlackboardMinHeight, Mathf.Max(BlackboardMinHeight, maxHeight));
+
+        bool widthChanged = float.IsNaN(panel.resolvedStyle.width) ||
+                            !Mathf.Approximately(panel.resolvedStyle.width, size.x);
+        bool heightChanged = blackboardExpanded &&
+                             (float.IsNaN(panel.resolvedStyle.height) ||
+                              !Mathf.Approximately(panel.resolvedStyle.height, size.y));
+        if (!widthChanged && !heightChanged && blackboardPanelSize == size)
+        {
+            ApplyBlackboardPosition(panel, blackboardPanelOffset);
+            return;
+        }
+
+        blackboardPanelSize = size;
+        panel.style.width = size.x;
+        if (blackboardExpanded)
+            panel.style.height = size.y;
+
+        ApplyBlackboardPosition(panel, blackboardPanelOffset);
     }
 
     void EnableBlackboardDrag(VisualElement panel, VisualElement dragHandle, VisualElement ignore)
@@ -398,7 +571,7 @@ public class GraphWindow : EditorWindow
         {
             panel.parent?.RegisterCallback<GeometryChangedEvent>(_ =>
             {
-                ApplyBlackboardPosition(panel, blackboardPanelOffset);
+                ApplyBlackboardSize(panel, blackboardPanelSize);
             });
         });
     }
@@ -432,13 +605,23 @@ public class GraphWindow : EditorWindow
         panel.style.top = position.y;
     }
 
-    void ApplyBlackboardFold(VisualElement panel, Button foldButton, VisualElement scroll, VisualElement addButton)
+    void ApplyBlackboardFold(
+        VisualElement panel,
+        Button foldButton,
+        VisualElement scroll,
+        VisualElement addButton,
+        params VisualElement[] resizeHandles)
     {
         foldButton.text = blackboardExpanded ? "▾" : "▸";
-        scroll.style.display = blackboardExpanded ? DisplayStyle.Flex : DisplayStyle.None;
-        addButton.style.display = blackboardExpanded ? DisplayStyle.Flex : DisplayStyle.None;
-        panel.style.maxHeight = blackboardExpanded ? 540 : 44;
-        panel.style.height = blackboardExpanded ? StyleKeyword.Auto : 44;
+        DisplayStyle contentDisplay = blackboardExpanded ? DisplayStyle.Flex : DisplayStyle.None;
+        scroll.style.display = contentDisplay;
+        addButton.style.display = contentDisplay;
+        for (int i = 0; i < resizeHandles.Length; i++)
+            resizeHandles[i].style.display = contentDisplay;
+
+        panel.style.maxHeight = blackboardExpanded ? StyleKeyword.None : 44;
+        panel.style.height = blackboardExpanded ? blackboardPanelSize.y : 44;
+        panel.style.minHeight = blackboardExpanded ? BlackboardMinHeight : 44;
         panel.schedule.Execute(() => ApplyBlackboardPosition(panel, blackboardPanelOffset));
     }
 

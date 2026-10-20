@@ -32,6 +32,7 @@ public class FSMGraphRuntime : IFSMNavigator
     {
         BuildCache();
         InitBlackboard();
+        InitMonitorNode();
         CurrentNodeId = "entryNode";
         GoToPort(PortType.Output);
     }
@@ -40,6 +41,16 @@ public class FSMGraphRuntime : IFSMNavigator
     {
         blackboard = graph.blackboard.Clone();
 
+    }
+
+    private void InitMonitorNode()
+    {
+        foreach(var monitor in monitorList)
+        {
+            IFSMMonitor IMonitor = monitor as IFSMMonitor;
+            IMonitor.Init();
+
+        }
     }
     void BuildCache()
     {
@@ -52,7 +63,9 @@ public class FSMGraphRuntime : IFSMNavigator
             {
                 monitorList.Add(statesByNodeId[node.id]);
                 if (statesByNodeId[node.id] is MonitorState monitorState)
+                {
                     monitorState.nodeId = node.id;
+                }
             }
             Debug.Log(node.id);
         }
