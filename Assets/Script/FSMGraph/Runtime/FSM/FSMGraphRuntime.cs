@@ -67,7 +67,6 @@ public class FSMGraphRuntime : IFSMNavigator
                     monitorState.nodeId = node.id;
                 }
             }
-            Debug.Log(node.id);
         }
 
         foreach (var edge in graph.edges)
