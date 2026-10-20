@@ -13,6 +13,9 @@ public class GraphWindow : EditorWindow
     private GraphWindowInspectorView graphInspectorView;
     VisualElement blackboardContentRoot;
     bool blackboardExpanded = true;
+    Vector2 blackboardPanelOffset = new Vector2(8f, 8f);
+    Vector3 blackboardDragStartPointer;
+    Vector2 blackboardDragStartOffset;
 
     [MenuItem("Tool/GraphView")]
     static void OpenFromMenu()
@@ -114,8 +117,8 @@ public class GraphWindow : EditorWindow
     {
         var panel = new VisualElement();
         panel.style.position = Position.Absolute;
-        panel.style.top = 8;
-        panel.style.left = 8;
+        panel.style.top = blackboardPanelOffset.y;
+        panel.style.left = blackboardPanelOffset.x;
         panel.style.width = 320;
         panel.style.maxHeight = 540;
         panel.style.backgroundColor = new Color(0.15f, 0.15f, 0.17f, 0.95f);
@@ -143,7 +146,15 @@ public class GraphWindow : EditorWindow
         header.style.marginBottom = 6;
         header.style.minHeight = 22;
 
+        var grip = new Label("::");
+        grip.pickingMode = PickingMode.Ignore;
+        grip.style.marginRight = 6;
+        grip.style.color = new Color(0.65f, 0.65f, 0.65f);
+        grip.style.unityFontStyleAndWeight = FontStyle.Bold;
+        header.Add(grip);
+
         var title = new Label("Blackboard");
+        title.pickingMode = PickingMode.Ignore;
         title.style.unityFontStyleAndWeight = FontStyle.Bold;
         title.style.flexGrow = 1;
         header.Add(title);
@@ -208,8 +219,90 @@ public class GraphWindow : EditorWindow
         panel.Add(scroll);
         panel.Add(addButton);
 
+        EnableBlackboardDrag(panel, header, foldButton);
         ApplyBlackboardFold(panel, foldButton, scroll, addButton);
         return panel;
+    }
+
+    void EnableBlackboardDrag(VisualElement panel, VisualElement dragHandle, VisualElement ignore)
+    {
+        dragHandle.RegisterCallback<PointerDownEvent>(evt =>
+        {
+            if (evt.button != (int)MouseButton.LeftMouse)
+                return;
+
+            var target = evt.target as VisualElement;
+            if (target != null && (target == ignore || ignore.Contains(target)))
+                return;
+
+            float left = panel.resolvedStyle.left;
+            float top = panel.resolvedStyle.top;
+            if (float.IsNaN(left))
+                left = blackboardPanelOffset.x;
+            if (float.IsNaN(top))
+                top = blackboardPanelOffset.y;
+
+            blackboardDragStartPointer = evt.position;
+            blackboardDragStartOffset = new Vector2(left, top);
+            dragHandle.CapturePointer(evt.pointerId);
+            evt.StopPropagation();
+        });
+
+        dragHandle.RegisterCallback<PointerMoveEvent>(evt =>
+        {
+            if (!dragHandle.HasPointerCapture(evt.pointerId))
+                return;
+
+            Vector2 delta = (Vector2)(evt.position - blackboardDragStartPointer);
+            ApplyBlackboardPosition(panel, blackboardDragStartOffset + delta);
+            evt.StopPropagation();
+        });
+
+        dragHandle.RegisterCallback<PointerUpEvent>(evt =>
+        {
+            if (!dragHandle.HasPointerCapture(evt.pointerId))
+                return;
+
+            dragHandle.ReleasePointer(evt.pointerId);
+            evt.StopPropagation();
+        });
+
+        panel.RegisterCallback<AttachToPanelEvent>(_ =>
+        {
+            panel.parent?.RegisterCallback<GeometryChangedEvent>(_ =>
+            {
+                ApplyBlackboardPosition(panel, blackboardPanelOffset);
+            });
+        });
+    }
+
+    void ApplyBlackboardPosition(VisualElement panel, Vector2 position)
+    {
+        var parent = panel.parent;
+        if (parent != null)
+        {
+            float parentWidth = parent.resolvedStyle.width;
+            float parentHeight = parent.resolvedStyle.height;
+            float panelWidth = panel.resolvedStyle.width;
+            float panelHeight = panel.resolvedStyle.height;
+
+            if (!float.IsNaN(parentWidth) && !float.IsNaN(panelWidth))
+                position.x = Mathf.Clamp(position.x, 0f, Mathf.Max(0f, parentWidth - panelWidth));
+            if (!float.IsNaN(parentHeight) && !float.IsNaN(panelHeight))
+                position.y = Mathf.Clamp(position.y, 0f, Mathf.Max(0f, parentHeight - panelHeight));
+        }
+
+        blackboardPanelOffset = position;
+
+        float currentLeft = panel.resolvedStyle.left;
+        float currentTop = panel.resolvedStyle.top;
+        if (!float.IsNaN(currentLeft) && !float.IsNaN(currentTop) &&
+            Mathf.Approximately(currentLeft, position.x) &&
+            Mathf.Approximately(currentTop, position.y))
+            return;
+
+        panel.style.left = position.x;
+        panel.style.top = position.y;
     }
 
     void ApplyBlackboardFold(VisualElement panel, Button foldButton, VisualElement scroll, VisualElement addButton)
@@ -219,6 +312,7 @@ public class GraphWindow : EditorWindow
         addButton.style.display = blackboardExpanded ? DisplayStyle.Flex : DisplayStyle.None;
         panel.style.maxHeight = blackboardExpanded ? 540 : 44;
         panel.style.height = blackboardExpanded ? StyleKeyword.Auto : 44;
+        panel.schedule.Execute(() => ApplyBlackboardPosition(panel, blackboardPanelOffset));
     }
 
     void ReBuildBlackboard()
