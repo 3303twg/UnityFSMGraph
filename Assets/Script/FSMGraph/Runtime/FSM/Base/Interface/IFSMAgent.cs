@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IFSMAgent
 {
-    public Transform transform { get; }
+    public Transform Transform { get; }
     //public Blackboard blackboard; FSMRuntime참조라 필요한가?
     public BaseStat baseStat { get; set; }
     public IFSMNavigator Navigator { get; }
