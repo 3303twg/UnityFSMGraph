@@ -23,11 +23,6 @@ public class MonitorState : BaseState, IFSMMonitor
     }
 
 
-    public void Init()
-    {
-        agent.GraphRuntime.blackboard.OnChanged += Compare;
-    }
-
     public void Compare()
     {
         hit = agent.GraphRuntime.blackboard.Compare(

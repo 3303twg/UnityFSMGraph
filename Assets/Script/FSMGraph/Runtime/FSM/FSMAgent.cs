@@ -33,4 +33,9 @@ public class FSMAgent : MonoBehaviour, IFSMAgent
     {
         stateMachine?.Update();
     }
+
+    private void OnDestroy()
+    {
+        GraphRuntime.Dispose();
+    }
 }

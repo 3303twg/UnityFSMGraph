@@ -5,5 +5,4 @@ using UnityEngine;
 public interface IFSMMonitor
 {
     public string nodeId { get; set; }
-    public void Init();
 }
