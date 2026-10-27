@@ -34,7 +34,7 @@ public class FSMGraphRuntime : IFSMNavigator
         InitBlackboard();
         blackboard.OnChanged += OnBlackboardChanged;
         string entryId = string.IsNullOrEmpty(graph.entryNodeId) ? "entryNode" : graph.entryNodeId;
-        RequestNode(entryId);
+        RequestTransition(entryId);
         Flush();
     }
 
@@ -45,12 +45,17 @@ public class FSMGraphRuntime : IFSMNavigator
     void OnBlackboardChanged()
     {
         MonitorState winner = null;
+        int highPriority = int.MinValue;
         for (int i = 0; i < monitorList.Count; i++)
         {
             if (monitorList[i] is not MonitorState monitor || !monitor.Poll())
                 continue;
-            winner = monitor;
-            break;
+
+            if (monitor.priority > highPriority)
+            {
+                highPriority = monitor.priority;
+                winner = monitor;
+            }
         }
         if (winner == null)
             return;
@@ -61,8 +66,10 @@ public class FSMGraphRuntime : IFSMNavigator
             return;
         }
 
+        if (!RequestMonitor(nextNodeId, winner.priority))
+            return;
+
         winner.Consume();
-        RequestNode(nextNodeId);
         if (!inCallback && !flushing)
             Flush();
     }
@@ -118,25 +125,47 @@ public class FSMGraphRuntime : IFSMNavigator
 
     public void GoToNode(string nodeId)
     {
-        RequestNode(nodeId);
+        RequestTransition(nodeId);
         if (!inCallback && !flushing)
             Flush();
     }
 
     const int MaxChain = 32;
     string pendingNodeId;
+    bool pendingIsMonitor;
+    int pendingMonitorPriority;
     bool inCallback;
     bool flushing;
     readonly HashSet<string> resolveSeen = new();
 
-    void RequestNode(string nodeId)
+    void RequestTransition(string nodeId)
     {
         if (string.IsNullOrEmpty(nodeId))
         {
             Debug.LogWarning("GoToNode: nodeId 비어있음");
             return;
         }
+        if (pendingIsMonitor)
+            return;
+
         pendingNodeId = nodeId;
+        pendingIsMonitor = false;
+    }
+
+    bool RequestMonitor(string nodeId, int priority)
+    {
+        if (string.IsNullOrEmpty(nodeId))
+        {
+            Debug.LogWarning("GoToNode: nodeId 비어있음");
+            return false;
+        }
+        if (pendingIsMonitor && priority <= pendingMonitorPriority)
+            return false;
+
+        pendingNodeId = nodeId;
+        pendingIsMonitor = true;
+        pendingMonitorPriority = priority;
+        return true;
     }
 
     public void Flush()
@@ -151,6 +180,7 @@ public class FSMGraphRuntime : IFSMNavigator
             {
                 string requested = pendingNodeId;
                 pendingNodeId = null;
+                pendingIsMonitor = false;
                 if (!TryResolveStaying(requested, out string stayId))
                     break;
                 if (!statesByNodeId.TryGetValue(stayId, out BaseState nextState))
@@ -257,7 +287,7 @@ public class FSMGraphRuntime : IFSMNavigator
         if (!TryNext(nodeId, portType, out string nextNodeId))
             return;
 
-        RequestNode(nextNodeId);
+        RequestTransition(nextNodeId);
         if (!inCallback && !flushing)
             Flush();
     }

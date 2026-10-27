@@ -11,7 +11,7 @@ public class MonitorState : BaseState, IFSMMonitor
     public bool rightBool;
     public string nodeId { get; set; }
     public bool isUsed = false;
-
+    public int priority;
     bool hit;
     public MonitorState(IFSMAgent agent, StateMachine stateMachine, MonitorStateSo data):base(agent, stateMachine)
     {
@@ -20,6 +20,8 @@ public class MonitorState : BaseState, IFSMMonitor
         rightKey = data.rightKey;
         rightString = data.rightString;
         rightBool = data.rightBool;
+        priority = data.priority;
+
     }
 
 

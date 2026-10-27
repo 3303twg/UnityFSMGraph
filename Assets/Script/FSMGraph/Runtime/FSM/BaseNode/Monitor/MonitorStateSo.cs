@@ -11,4 +11,5 @@ public class MonitorStateSo : BaseStateSo<MonitorState>
     public float rightKey;
     public string rightString;
     public bool rightBool;
+    public int priority;
 }
