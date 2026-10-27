@@ -80,7 +80,7 @@ public class FSMGraphRuntime : IFSMNavigator
         {
             if (node.stateSo == null) continue;
 
-            statesByNodeId[node.id] = node.stateSo.CreateState(agent, stateMachine);
+            statesByNodeId[node.id] = node.stateSo.CreateState(agent);
             if (node.nodeType == NodeType.Monitor)
             {
                 monitorList.Add(statesByNodeId[node.id]);

@@ -10,8 +10,8 @@ public class CompareState : BaseState
     public string rightString;
     public bool rightBool;
 
-    public CompareState(IFSMAgent agent, StateMachine stateMachine, CompareStateSo data)
-        : base(agent, stateMachine)
+    public CompareState(IFSMAgent agent, CompareStateSo data)
+        : base(agent)
     {
         compareOperator = data.compareOperator;
         leftKey = data.leftKey;

@@ -14,7 +14,7 @@ public class MonitorState : BaseState, IFSMMonitor
     public int priority;
     bool hit;
     bool canReActive;
-    public MonitorState(IFSMAgent agent, StateMachine stateMachine, MonitorStateSo data):base(agent, stateMachine)
+    public MonitorState(IFSMAgent agent, MonitorStateSo data):base(agent)
     {
         compareOperator = data.compareOperator;
         leftKey = data.leftKey;
