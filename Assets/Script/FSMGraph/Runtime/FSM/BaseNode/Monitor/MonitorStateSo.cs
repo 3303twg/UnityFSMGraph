@@ -12,4 +12,5 @@ public class MonitorStateSo : BaseStateSo<MonitorState>
     public string rightString;
     public bool rightBool;
     public int priority;
+    public bool canReActive = true;
 }

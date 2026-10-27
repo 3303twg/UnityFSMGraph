@@ -13,6 +13,7 @@ public class MonitorState : BaseState, IFSMMonitor
     public bool isUsed = false;
     public int priority;
     bool hit;
+    bool canReActive;
     public MonitorState(IFSMAgent agent, StateMachine stateMachine, MonitorStateSo data):base(agent, stateMachine)
     {
         compareOperator = data.compareOperator;
@@ -21,6 +22,7 @@ public class MonitorState : BaseState, IFSMMonitor
         rightString = data.rightString;
         rightBool = data.rightBool;
         priority = data.priority;
+        canReActive = data.canReActive;
 
     }
 
@@ -31,7 +33,7 @@ public class MonitorState : BaseState, IFSMMonitor
             leftKey, compareOperator, rightKey, rightString, rightBool);
         if (isUsed)
         {
-            if (!hit)
+            if (!hit && canReActive)
                 isUsed = false;
             return false;
         }
