@@ -6,7 +6,7 @@ public class TestState : BaseState
 {
     public string textTest = "0";
 
-    public TestState(IFSMAgent agent, StateMachine stateMachine, TestStateSo data)
+    public TestState(IFSMAgent agent, TestStateSo data)
         : base(agent)
     {
         textTest = data.testText;

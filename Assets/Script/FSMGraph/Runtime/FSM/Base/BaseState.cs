@@ -5,7 +5,6 @@ using UnityEngine;
 public abstract class BaseState
 {
     [NonSerialized] protected IFSMAgent agent;
-    [NonSerialized] protected StateMachine stateMachine;
 
     public BaseState(IFSMAgent agent)
     {
