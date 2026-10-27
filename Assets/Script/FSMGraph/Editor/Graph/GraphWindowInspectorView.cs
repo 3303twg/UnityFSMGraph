@@ -33,12 +33,12 @@ public class GraphWindowInspectorView : VisualElement
 
         root = new VisualElement();
         Add(root);
-        Clear();
+        ClearBinding();
 
         RegisterCallback<DetachFromPanelEvent>(_ => UnbindRuntimeInspector());
     }
 
-    public void Clear()
+    public void ClearBinding()
     {
         boundNode = null;
         boundEdge = null;

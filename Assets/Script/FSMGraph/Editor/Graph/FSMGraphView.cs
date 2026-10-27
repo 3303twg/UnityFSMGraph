@@ -175,14 +175,14 @@ public class FSMGraphView : GraphView
         {
             if(selection.Count > 1 || selection.Count == 0)
             {
-                inspector.Clear();
+                inspector.ClearBinding();
             }
             else if (selection[0] is NodeView node)
                 inspector.BindNode(node.data, graphSo);
             else if (selection[0] is Edge edge && edge.userData is EdgeData edgeData)
                 inspector.BindEdge(edgeData, graphSo);
             else
-                inspector.Clear();
+                inspector.ClearBinding();
         }).ExecuteLater(0); //한프레임 후 실행하기
     }
 
