@@ -12,7 +12,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d438543a04bc9684db9379c8fb8165ee, type: 3}
   m_Name: New FSM Graph So 1
   m_EditorClassIdentifier: 
-  entryNodeId: 
+  entryNodeId: entryNode
   id: 
-  nodes: []
+  nodes:
+  - id: entryNode
+    nodeType: 0
+    title: Entry
+    position: {x: 61, y: 211}
+    stateSo: {fileID: 0}
+    referenceTargetId: 
+  - id: 0053fc4c-c764-475b-99f4-93661e20bf06
+    nodeType: 2
+    title: New_Node
+    position: {x: 362, y: 134}
+    stateSo: {fileID: 0}
+    referenceTargetId: 
   edges: []
+  blackboard:
+    variables:
+    - rid: 4417157583609528324
+    - rid: 4417157583609528325
+    - rid: 4417157583609528326
+    - rid: 4417157583609528327
+  references:
+    version: 2
+    RefIds:
+    - rid: 4417157583609528324
+      type: {class: FloatVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: ab64ec09-0787-4a3b-8d15-308aca3a0017
+        value: 4
+    - rid: 4417157583609528325
+      type: {class: StringVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: 828d057f-eeef-41d3-b454-3f16619dd78a
+        value: 4
+    - rid: 4417157583609528326
+      type: {class: BoolVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: 81bf8cdd-9ee2-4a4a-8829-686be8f37d06
+        value: 0
+    - rid: 4417157583609528327
+      type: {class: GameObjectVariable, ns: , asm: FSMGraph.Runtime}
+      data:
+        key: 0fc39ac6-85a6-4e8c-a031-c3ddac491985
+        value: {fileID: 0}

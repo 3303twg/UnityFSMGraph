@@ -33,8 +33,9 @@ public class FSMGraphRuntime : IFSMNavigator
         BuildCache();
         InitBlackboard();
         blackboard.OnChanged += OnBlackboardChanged;
-        CurrentNodeId = "entryNode";
-        GoToPort(PortType.Output);
+        string entryId = string.IsNullOrEmpty(graph.entryNodeId) ? "entryNode" : graph.entryNodeId;
+        RequestNode(entryId);
+        Flush();
     }
 
     void InitBlackboard()
@@ -43,11 +44,27 @@ public class FSMGraphRuntime : IFSMNavigator
     }
     void OnBlackboardChanged()
     {
+        MonitorState winner = null;
         for (int i = 0; i < monitorList.Count; i++)
         {
-            if (monitorList[i] is MonitorState monitor)
-                monitor.Compare();
+            if (monitorList[i] is not MonitorState monitor || !monitor.Poll())
+                continue;
+            winner = monitor;
+            break;
         }
+        if (winner == null)
+            return;
+
+        if (!nextNodeByPort.TryGetValue((winner.nodeId, PortType.Output), out string nextNodeId))
+        {
+            Debug.LogWarning($"엣지 없음: {winner.nodeId} / {PortType.Output}");
+            return;
+        }
+
+        winner.Consume();
+        RequestNode(nextNodeId);
+        if (!inCallback && !flushing)
+            Flush();
     }
 
     void BuildCache()
@@ -85,105 +102,164 @@ public class FSMGraphRuntime : IFSMNavigator
         };
     }
 
-    public void GoToNode(string nodeId)
+    public void Tick()
     {
-        GoToNodeInternal(nodeId);
-    }
-
-
-    //하나의 호출 스택중 전이순환 거르는용도
-    const int MaxChain = 32;
-    int chainDepth;
-    readonly List<string> chain = new();
-    readonly HashSet<string> chainSet = new();
-
-    void GoToNodeInternal(string nodeId)
-    {
-
-        if (!chainSet.Add(nodeId))
-        {
-            Debug.LogError($"전이 순환: {string.Join(" → ", chain)} → {nodeId}");
-            return;
-        }
-        if (chain.Count >= MaxChain)
-        {
-            chainSet.Remove(nodeId);
-            Debug.LogError($"전이 깊이 초과: {string.Join(" → ", chain)}");
-            return;
-        }
-        chain.Add(nodeId);
-        chainDepth++;
-
+        inCallback = true;
         try
         {
-            if (string.IsNullOrEmpty(nodeId))
+            stateMachine.Update();
+        }
+        finally
+        {
+            inCallback = false;
+        }
+        Flush();
+    }
+
+    public void GoToNode(string nodeId)
+    {
+        RequestNode(nodeId);
+        if (!inCallback && !flushing)
+            Flush();
+    }
+
+    const int MaxChain = 32;
+    string pendingNodeId;
+    bool inCallback;
+    bool flushing;
+    readonly HashSet<string> resolveSeen = new();
+
+    void RequestNode(string nodeId)
+    {
+        if (string.IsNullOrEmpty(nodeId))
+        {
+            Debug.LogWarning("GoToNode: nodeId 비어있음");
+            return;
+        }
+        pendingNodeId = nodeId;
+    }
+
+    public void Flush()
+    {
+        if (flushing || inCallback) return;
+
+        flushing = true;
+        try
+        {
+            int depth = 0;
+            while (!string.IsNullOrEmpty(pendingNodeId) && depth++ < MaxChain)
             {
-                Debug.LogWarning("GoToNode: nodeId 비어있음");
-                return;
+                string requested = pendingNodeId;
+                pendingNodeId = null;
+                if (!TryResolveStaying(requested, out string stayId))
+                    break;
+                if (!statesByNodeId.TryGetValue(stayId, out BaseState nextState))
+                {
+                    Debug.LogWarning($"State 없음: {stayId}");
+                    break;
+                }
+
+                CurrentNodeId = stayId;
+                
+                inCallback = true;
+                try
+                {
+                    BaseState state = statesByNodeId[stayId];
+                    stateMachine.ChangeState(state);
+                }
+                finally
+                {
+                    inCallback = false;
+                }
+                FSMGraphRuntimeDebugger.SetActiveNode(agent as UnityEngine.Object, CurrentNodeId);
+            }
+
+            if (!string.IsNullOrEmpty(pendingNodeId))
+                Debug.LogError($"전이 깊이 초과: {pendingNodeId}");
+        }
+        finally
+        {
+            flushing = false;
+        }
+    }
+
+    bool TryResolveStaying(string nodeId, out string stayId)
+    {
+        stayId = null;
+        resolveSeen.Clear();
+        int depth = 0;
+        while (!string.IsNullOrEmpty(nodeId) && depth++ < MaxChain)
+        {
+            if (!resolveSeen.Add(nodeId))
+            {
+                Debug.LogError($"전이 순환: {nodeId}");
+                return false;
             }
 
             NodeData node = graph.GetNode(nodeId);
             if (node == null)
             {
                 Debug.LogWarning($"노드 없음: {nodeId}");
-                return;
+                return false;
             }
 
-            // Ref는 상태가 아님 → 타겟으로 워프
-            if (node.nodeType == NodeType.Reference)
+            switch (node.nodeType)
             {
-                if (string.IsNullOrEmpty(node.referenceTargetId))
-                {
-                    Debug.LogWarning($"Reference 타겟 없음: {node.title} ({nodeId})");
-                    return;
-                }
-
-                GoToNodeInternal(node.referenceTargetId);
-                return;
+                case NodeType.Reference:
+                    if (string.IsNullOrEmpty(node.referenceTargetId))
+                    {
+                        Debug.LogWarning($"Reference 타겟 없음: {node.title} ({nodeId})");
+                        return false;
+                    }
+                    nodeId = node.referenceTargetId;
+                    continue;
+                case NodeType.Entry:
+                case NodeType.Monitor:
+                    if (!TryNext(nodeId, PortType.Output, out nodeId))
+                        return false;
+                    continue;
+                case NodeType.Transition:
+                    if (!statesByNodeId.TryGetValue(nodeId, out BaseState state) || state is not CompareState compare)
+                    {
+                        Debug.LogWarning($"Compare 없음: {nodeId}");
+                        return false;
+                    }
+                    PortType port = compare.Evaluate() ? PortType.True : PortType.False;
+                    if (!TryNext(nodeId, port, out nodeId))
+                        return false;
+                    continue;
+                case NodeType.Action:
+                    stayId = nodeId;
+                    return true;
             }
-
-            if (!statesByNodeId.TryGetValue(nodeId, out BaseState nextState))
-            {
-                Debug.LogWarning($"State 없음: {nodeId}");
-                return;
-            }
-
-            CurrentNodeId = nodeId;
-            stateMachine.ChangeState(nextState);
-            FSMGraphRuntimeDebugger.SetActiveNode(agent as UnityEngine.Object, CurrentNodeId);
         }
 
-        finally
-        {
-            chainDepth--;
-            if (chainDepth == 0)
-            {
-                chain.Clear();
-                chainSet.Clear();
-            }
-        }
+        Debug.LogError($"전이 깊이 초과: {nodeId}");
+        return false;
+    }
+
+    bool TryNext(string nodeId, PortType portType, out string nextNodeId)
+    {
+        if (nextNodeByPort.TryGetValue((nodeId, portType), out nextNodeId))
+            return true;
+
+        Debug.LogWarning($"엣지 없음: {nodeId} / {portType}");
+        return false;
     }
 
     public void GoToPort(PortType portType)
     {
-        if (!nextNodeByPort.TryGetValue((CurrentNodeId, portType), out string nextNodeId))
-        {
-            Debug.LogWarning($"엣지 없음: {CurrentNodeId} / {portType}");
-            return;
-        }
-
-        GoToNode(nextNodeId);
+        GoToPortFrom(CurrentNodeId, portType);
     }
 
     public void GoToPortFrom(string nodeId, PortType portType)
     {
-        if (!nextNodeByPort.TryGetValue((nodeId, portType), out string nextNodeId))
-        {
-            Debug.LogWarning($"엣지 없음: {nodeId} / {portType}");
+        if (!TryNext(nodeId, portType, out string nextNodeId))
             return;
-        }
 
-        GoToNode(nextNodeId);
+        RequestNode(nextNodeId);
+        if (!inCallback && !flushing)
+            Flush();
     }
 
     public void GoToNextNode() => GoToPort(PortType.Output);

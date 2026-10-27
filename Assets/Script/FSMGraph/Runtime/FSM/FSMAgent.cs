@@ -31,7 +31,7 @@ public class FSMAgent : MonoBehaviour, IFSMAgent
 
     void Update()
     {
-        stateMachine?.Update();
+        GraphRuntime?.Tick();
     }
 
     private void OnDestroy()

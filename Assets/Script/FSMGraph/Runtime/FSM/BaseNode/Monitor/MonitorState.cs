@@ -23,25 +23,23 @@ public class MonitorState : BaseState, IFSMMonitor
     }
 
 
-    public void Compare()
+    public bool Poll()
     {
         hit = agent.GraphRuntime.blackboard.Compare(
             leftKey, compareOperator, rightKey, rightString, rightBool);
         if (isUsed)
         {
             if (!hit)
-            {
                 isUsed = false;
-            }
-            return;
+            return false;
         }
 
-        if (hit)
-        {
-            isUsed = true;
-            agent.Navigator.GoToPortFrom(nodeId, PortType.Output);
+        return hit;
+    }
 
-        }
+    public void Consume()
+    {
+        isUsed = true;
     }
 
 

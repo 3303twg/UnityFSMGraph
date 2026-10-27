@@ -9,13 +9,12 @@ public class StateMachine
 
     public void InitState(BaseState state)
     {
-        curState = state;
-        curState?.Enter();
+        ChangeState(state);
     }
-    public void ChangeState(BaseState state)
+    public void ChangeState(BaseState nextState)
     {
         curState?.Exit();
-        curState = state;
+        curState = nextState;
         curState?.Enter();
     }
 

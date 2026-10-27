@@ -20,12 +20,15 @@ public class CompareState : BaseState
         rightBool = data.rightBool;
     }
 
+    public bool Evaluate()
+    {
+        return agent.GraphRuntime.blackboard.Compare(
+            leftKey, compareOperator, rightKey, rightString, rightBool);
+    }
+
     public override void Enter()
     {
-        bool result = agent.GraphRuntime.blackboard.Compare(
-            leftKey, compareOperator, rightKey, rightString, rightBool);
-
-        if (result)
+        if (Evaluate())
             agent.Navigator.GoToTrueNode();
         else
             agent.Navigator.GoToFalseNode();
