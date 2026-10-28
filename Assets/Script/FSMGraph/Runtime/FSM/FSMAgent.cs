@@ -7,7 +7,6 @@ public class FSMAgent : MonoBehaviour, IFSMAgent
     public FSMGraphSo graphSo;
 
     public Transform Transform => this.transform;
-    public BaseStat baseStat { get; set; }
     
     public FSMGraphRuntime GraphRuntime { get; set; }
 

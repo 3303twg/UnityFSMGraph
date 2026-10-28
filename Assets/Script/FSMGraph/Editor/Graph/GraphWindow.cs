@@ -677,6 +677,17 @@ public class GraphWindow : EditorWindow
                     valueField = field;
                     break;
                 }
+                case IntVariable intVariable:
+                    {
+                        var field = new IntegerField { value = intVariable.value };
+                        field.RegisterValueChangedCallback(evt =>
+                        {
+                            GetActiveBlackboard().Set(key, evt.newValue, false);
+                            MarkGraphDirtyIfEditing();
+                        });
+                        valueField = field;
+                        break;
+                    }
                 case BoolVariable boolVariable:
                 {
                     var toggle = new Toggle { value = boolVariable.value };

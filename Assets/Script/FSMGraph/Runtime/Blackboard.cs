@@ -53,6 +53,8 @@ public class Blackboard : ISerializationCallbackReceiver
         {
             case FloatVariable floatVariable:
                 return CompareFloat(op, floatVariable.value, rightNumber);
+            case IntVariable intVariable:
+                return CompareFloat(op, intVariable.value, rightNumber);
             case StringVariable stringVariable:
                 return CompareString(op, stringVariable.value, rightText);
             case BoolVariable boolVariable:
@@ -126,6 +128,7 @@ public class Blackboard : ISerializationCallbackReceiver
         }
     }
 
+    //레거신가?
     public void Set(string key, object value, bool notify = true)
     {
         if (!lookUp.TryGetValue(key, out var v))
@@ -169,6 +172,18 @@ public class Blackboard : ISerializationCallbackReceiver
             OnChanged?.Invoke();
     }
 
+    public void Set(string key, int value, bool notify = true)
+    {
+        if (!lookUp.TryGetValue(key, out var variable))
+            throw new KeyNotFoundException();
+        if (variable is not IntVariable intVariable)
+            throw new InvalidCastException(variable.GetType().Name);
+
+        intVariable.value = value;
+        if (notify)
+            OnChanged?.Invoke();
+    }
+
     public void Set(string key, bool value, bool notify = true)
     {
         if (!lookUp.TryGetValue(key, out var variable))
@@ -193,7 +208,7 @@ public class Blackboard : ISerializationCallbackReceiver
             OnChanged?.Invoke();
     }
 
-
+    //밸류 객체 Blackboard.CreateVariable로 생성할것 //
     public void Add(BlackboardVariable variable)
     {
         if (lookUp.ContainsKey(variable.key))
@@ -244,10 +259,13 @@ public class Blackboard : ISerializationCallbackReceiver
         OnChanged?.Invoke();
     }
 
+    //블랙보드 밸류 객체 생성
     public static BlackboardVariable CreateVariable(Type type, string key)
     {
         if (type == typeof(float))
             return new FloatVariable { key = key, value = 0f };
+        if (type == typeof(int))
+            return new IntVariable { key = key, value = 0 };
         if (type == typeof(bool))
             return new BoolVariable { key = key, value = false };
         if (type == typeof(string))
@@ -321,6 +339,15 @@ public sealed class FloatVariable : BlackboardVariable
 
     public override object GetValue() => value;
     public override void SetValue(object v) => value = v is float floatValue ? floatValue : Convert.ToSingle(v);
+}
+
+[Serializable]
+public sealed class IntVariable : BlackboardVariable
+{
+    public int value;
+
+    public override object GetValue() => value;
+    public override void SetValue(object v) => value = (int)(v is int intValue ? intValue : Convert.ToSingle(v));
 }
 
 [Serializable]
