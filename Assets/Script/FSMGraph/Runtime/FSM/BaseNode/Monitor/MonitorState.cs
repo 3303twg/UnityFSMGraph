@@ -29,7 +29,7 @@ public class MonitorState : BaseState, IFSMMonitor
 
     public bool Poll()
     {
-        hit = agent.GraphRuntime.blackboard.Compare(
+        hit = agent.Blackboard.Compare(
             leftKey, compareOperator, rightKey, rightString, rightBool);
         if (isUsed)
         {

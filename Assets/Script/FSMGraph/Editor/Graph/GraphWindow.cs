@@ -933,6 +933,6 @@ public class GraphWindow : EditorWindow
         if (boundAgent.graphSo != currentGraph)
             return null;
 
-        return boundAgent.GraphRuntime?.blackboard;
+        return boundAgent.Blackboard;
     }
 }

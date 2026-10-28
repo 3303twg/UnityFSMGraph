@@ -7,8 +7,11 @@ public class FSMAgent : MonoBehaviour, IFSMAgent
     public FSMGraphSo graphSo;
 
     public Transform Transform => this.transform;
-    
-    public FSMGraphRuntime GraphRuntime { get; set; }
+
+    FSMGraphRuntime graphRuntime;
+    public FSMGraphRuntime GraphRuntime => graphRuntime;
+
+    public Blackboard Blackboard => GraphRuntime.Blackboard;
 
     [SerializeReference]
     BaseState runtimeDebugState;
@@ -24,7 +27,7 @@ public class FSMAgent : MonoBehaviour, IFSMAgent
     private void Awake()
     {
         stateMachine = new StateMachine();
-        GraphRuntime = new FSMGraphRuntime(graphSo, this, stateMachine);
+        graphRuntime = new FSMGraphRuntime(graphSo, this, stateMachine);
         GraphRuntime.Init();
     }
 

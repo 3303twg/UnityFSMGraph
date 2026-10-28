@@ -17,18 +17,25 @@ public class EnemyController : MonoBehaviour
     }
     private void Start()
     {
-        agent.GraphRuntime.blackboard.Add(Blackboard.CreateVariable(typeof(float), "float"));
-        agent.GraphRuntime.blackboard.Add(Blackboard.CreateVariable(typeof(int), "int"));
-        //agent.GraphRuntime.blackboard.Add<int>(new BlackboardVariable<int>() { key = "distance" });
-        //agent.GraphRuntime.blackboard.Add<string>(new BlackboardVariable<string>() { key = "string" });
-        //agent.GraphRuntime.blackboard.Add<float>(new BlackboardVariable<float>() { key = "float" });
+        agent.Blackboard.Add(Blackboard.CreateVariable(typeof(float), "float"));
+        agent.Blackboard.Add(Blackboard.CreateVariable(typeof(float), "distance"));
+        agent.Blackboard.Add(Blackboard.CreateVariable(typeof(int), "int"));
+        //agent.Blackboard.Add<int>(new BlackboardVariable<int>() { key = "distance" });
+        //agent.Blackboard.Add<string>(new BlackboardVariable<string>() { key = "string" });
+        //agent.Blackboard.Add<float>(new BlackboardVariable<float>() { key = "float" });
     }
 
+    public float distance;
+    public void Update()
+    {
+        distance = Vector2.Distance(FastPlayer.instance.transform.position, transform.position);
+        agent.Blackboard.Set("distance", distance);
+    }
 
     [ContextMenu("TakeDamage")]
     public void TakeDamage()
     {
         enemyStat.hp -= 1f;
-        agent.GraphRuntime.blackboard.Set("Hp", enemyStat.hp);
+        agent.Blackboard.Set("Hp", enemyStat.hp);
     }
 }

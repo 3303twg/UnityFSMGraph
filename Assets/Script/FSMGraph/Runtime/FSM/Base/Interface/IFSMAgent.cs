@@ -6,5 +6,6 @@ public interface IFSMAgent
 {
     public Transform Transform { get; }
     public IFSMNavigator Navigator { get; }
-    public FSMGraphRuntime GraphRuntime { get; set; }
+    public Blackboard Blackboard { get; }
+
 }

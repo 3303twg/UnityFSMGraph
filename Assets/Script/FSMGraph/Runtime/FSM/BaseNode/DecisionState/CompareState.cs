@@ -22,7 +22,7 @@ public class CompareState : BaseState
 
     public bool Evaluate()
     {
-        return agent.GraphRuntime.blackboard.Compare(
+        return agent.Blackboard.Compare(
             leftKey, compareOperator, rightKey, rightString, rightBool);
     }
 
