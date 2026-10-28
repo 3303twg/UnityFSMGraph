@@ -9,6 +9,8 @@ public class DemoEnemyController : MonoBehaviour
 
     public FSMAgent agent;
 
+    public Transform target;
+
     private void Awake()
     {
         agent = GetComponent<FSMAgent>();
@@ -28,7 +30,7 @@ public class DemoEnemyController : MonoBehaviour
     public float distance;
     public void Update()
     {
-        distance = Vector2.Distance(FastPlayer.instance.transform.position, transform.position);
+        distance = Vector2.Distance(target.position, transform.position);
         agent.Blackboard.Set("distance", distance);
     }
 
