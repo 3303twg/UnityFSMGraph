@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class EnemyController : MonoBehaviour
+public class DemoEnemyController : MonoBehaviour
 {
     [SerializeField]
     public BaseStat enemyStat;
